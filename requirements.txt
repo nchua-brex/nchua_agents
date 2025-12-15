@@ -1,0 +1,20 @@
+# Snowflake Data Agent Requirements
+
+# Core dependencies
+pandas>=1.5.0
+pyyaml>=6.0
+sqlite3  # Part of Python standard library
+
+# Optional dependencies for enhanced functionality
+numpy>=1.21.0
+openpyxl>=3.0.0  # For Excel export
+xlsxwriter>=3.0.0  # For advanced Excel formatting
+
+# Development and testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+# Snowflake CLI (install separately)
+# Follow instructions at: https://docs.snowflake.com/en/developer-guide/snowflake-cli/installation/installation
