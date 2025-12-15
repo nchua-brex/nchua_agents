@@ -1,358 +1,359 @@
-# Solutions Consultant Attainment Analysis 📊
+# nchua_agents 🤖
 
-An intelligent Snowflake data extraction and analysis system for Solutions Consultant performance and customer revenue analysis.
+A modular multi-agent system for intelligent data analysis and automation. This system provides specialized agents that can work independently or collaboratively to perform complex analysis tasks.
 
 ## 🎯 Overview
 
-This project provides a comprehensive toolkit for analyzing Solutions Consultant attainment and customer performance using Brex's Snowflake data warehouse. The system includes an intelligent agent that learns from your SQL patterns and optimizes data extraction for recurring analysis tasks.
+The `nchua_agents` system is designed to be a scalable platform for deploying specialized AI agents that can:
 
-### Key Features
+- **Work Independently**: Each agent has specific capabilities and can operate standalone
+- **Collaborate Seamlessly**: Agents can communicate and coordinate through the orchestrator
+- **Learn and Improve**: Agents can learn from successful patterns and optimize over time
+- **Scale Horizontally**: Easy to add new specialized agents as needs grow
 
-- **🤖 Intelligent Data Agent**: Learns from your SQL queries and improves methodology
-- **📈 Customer Revenue Analysis**: SaaS vs Non-SaaS segmentation and performance metrics
-- **🎯 Territory Analysis**: Solutions Consultant performance and territory insights
-- **📅 Cohort Analysis**: Customer lifecycle and retention patterns
-- **🔄 Query Pattern Learning**: Automatically learns and optimizes from successful queries
-- **📤 Automated Exports**: CSV exports with metadata and audit trails
-- **⚡ Performance Optimization**: Built-in query optimization for Snowflake best practices
+### Current Agents
 
-## 📁 Project Structure
+| Agent | Purpose | Capabilities |
+|-------|---------|--------------|
+| 🗄️ **Snowflake Agent** | Data extraction and analysis from Snowflake | Customer revenue analysis, territory performance, cohort analysis, query pattern learning |
+
+### Coming Soon
+- 📊 **Analysis Agent**: Advanced statistical analysis and insights generation
+- 📈 **Visualization Agent**: Automated chart and dashboard creation
+- 📧 **Reporting Agent**: Automated report generation and distribution
+- 🔍 **Research Agent**: Web research and competitive intelligence
+
+## 🏗️ System Architecture
 
 ```
-Solutions Consultant Attainment/
-├── 📖 Documentation
-│   ├── CLAUDE.md                           # Project context for Claude
-│   ├── SNOWFLAKE_SCHEMA.md                 # Comprehensive schema documentation
-│   ├── SNOWFLAKE_MCP_TROUBLESHOOTING.md   # Snowflake MCP setup guide
-│   └── README.md                           # This file
-├── 🔍 Reference Materials
-│   ├── reference_queries.sql               # Validated SQL patterns from data team
-│   └── customer_base_raw_data.sql          # Raw customer data queries
-├── 🤖 Agent System
-│   ├── snowflake_data_agent.py             # Core intelligent data agent
-│   ├── run_analysis.py                     # User-friendly CLI interface
-│   ├── snowflake_agent_config.yaml        # Agent configuration
-│   └── requirements.txt                    # Python dependencies
-├── 📊 Analysis Scripts
-│   ├── create_segment_mapping.py           # Customer segmentation utilities
-│   ├── run_segment_analysis.py             # Segment analysis automation
-│   └── pure_segmentation_check_OLD.sql    # Legacy segmentation queries
-├── 📈 Data Exports
-│   ├── results.csv                         # Analysis results
-│   ├── saas_tam_matrix.csv                # SaaS TAM analysis
-│   ├── saas_tam_summary.csv               # SaaS TAM summary
-│   └── data_extracts/                      # Generated exports directory
-└── 📋 Reports
-    └── SAAS_TAM_ANALYSIS.pdf               # TAM analysis report
+nchua_agents/
+├── 🤖 agent_orchestrator.py          # Main coordination system
+├── 🔧 shared/                        # Shared utilities and base classes
+│   └── utils/
+│       ├── base_agent.py             # Base agent class and interfaces
+│       └── __init__.py
+├── 🏢 agents/                        # Individual agent implementations
+│   ├── snowflake_agent/              # Snowflake data extraction agent
+│   │   ├── snowflake_data_agent.py   # Main agent implementation
+│   │   ├── snowflake_agent_config.yaml # Agent configuration
+│   │   ├── run_analysis.py           # Standalone CLI interface
+│   │   └── __init__.py
+│   └── __init__.py
+├── 📚 Documentation & Reference
+│   ├── README.md                     # This file
+│   ├── SNOWFLAKE_SCHEMA.md          # Snowflake database schema
+│   ├── reference_queries.sql        # Validated SQL patterns
+│   └── SNOWFLAKE_MCP_TROUBLESHOOTING.md
+├── 📊 Analysis & Data
+│   ├── *.csv                        # Analysis results
+│   ├── *.sql                        # Custom queries
+│   └── data_extracts/               # Generated exports
+└── 📋 Project Files
+    ├── requirements.txt
+    └── .gitignore
 ```
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
-
-- **Snowflake CLI**: Install from [Snowflake Documentation](https://docs.snowflake.com/en/developer-guide/snowflake-cli/installation/installation)
-- **Python 3.8+**: With pip package manager
-- **Snowflake MCP**: Configured in Claude Code (see troubleshooting guide)
-
-### 2. Installation
+### 1. Installation
 
 ```bash
-# Install Python dependencies
+# Clone the repository
+git clone https://github.com/nchua-brex/nchua_agents.git
+cd nchua_agents
+
+# Install dependencies
 pip install -r requirements.txt
 
-# Make scripts executable
-chmod +x snowflake_data_agent.py
-chmod +x run_analysis.py
+# Make executables
+chmod +x agent_orchestrator.py
+chmod +x agents/snowflake_agent/run_analysis.py
 ```
 
-### 3. Configuration
+### 2. Basic Usage
 
-The agent uses `snowflake_agent_config.yaml` for configuration. Default settings should work out of the box, but you can customize:
-
-```yaml
-# Key settings
-default_warehouse: "COMPUTE_XSMALL_WH"
-default_role: "BREX_NCHUA"
-output_directory: "./data_extracts"
-default_date_range_months: 3
-```
-
-## 💻 Usage Examples
-
-### Basic Customer Revenue Analysis
+#### Using the Orchestrator (Recommended)
 
 ```bash
-# Analyze customer revenue by edition (SaaS vs Non-SaaS)
-python run_analysis.py customer-revenue --export
+# Run comprehensive customer analysis
+python agent_orchestrator.py --task customer-analysis --months 6 --export
 
-# Include One Brex Segment analysis
-python run_analysis.py customer-revenue --include-obs --months 6 --export
+# Analyze specific SC territories
+python agent_orchestrator.py --task territory-performance --sc-names "John Smith,Jane Doe" --export
+
+# Run complete revenue analysis across all dimensions
+python agent_orchestrator.py --task comprehensive-revenue-analysis --months 12 --export
+
+# List available agents and capabilities
+python agent_orchestrator.py --list-agents
+python agent_orchestrator.py --list-capabilities
 ```
 
-### Solutions Consultant Territory Analysis
+#### Using Individual Agents
 
 ```bash
-# Analyze all SC territories
-python run_analysis.py sc-territories --export
+# Snowflake Agent - Customer revenue analysis
+python agents/snowflake_agent/run_analysis.py customer-revenue --months 6 --export
 
-# Analyze specific territories
-python run_analysis.py sc-territories "John Smith" "Jane Doe" --months 6 --export
+# Snowflake Agent - Territory analysis
+python agents/snowflake_agent/run_analysis.py sc-territories "John Smith" --export
+
+# Snowflake Agent - Learn new query pattern
+python agents/snowflake_agent/run_analysis.py learn-query \
+  --name "pipeline_analysis" \
+  --description "Analyze sales pipeline performance" \
+  --file pipeline_query.sql \
+  --category "sales_analysis"
 ```
 
-### Cohort Analysis
+## 🤖 Agent System Features
 
-```bash
-# Year-over-year cohort analysis
-python run_analysis.py cohorts --period year --export
+### Multi-Agent Orchestration
 
-# Quarterly cohort analysis
-python run_analysis.py cohorts --period quarter --months 12 --export
-```
-
-### Custom Query Execution
-
-```bash
-# Execute a custom query
-python run_analysis.py custom --query "SELECT * FROM coredata.customer.customer_wide LIMIT 10" --export
-
-# Execute query from file
-python run_analysis.py custom --file my_analysis.sql --description "Pipeline Analysis" --export
-```
-
-### Query Pattern Learning
-
-```bash
-# Learn a new query pattern for reuse
-python run_analysis.py learn-query \
-  --name "pipeline_revenue_analysis" \
-  --description "Analyze pipeline vs current customer revenue" \
-  --file pipeline_analysis.sql \
-  --category "revenue_analysis" \
-  --parameters "months_back" "territory"
-```
-
-### Pattern Management
-
-```bash
-# List all available query patterns
-python run_analysis.py list-patterns
-
-# List patterns by category
-python run_analysis.py list-patterns --category customer_segmentation
-
-# Show schema information
-python run_analysis.py schema
-```
-
-## 🧠 Intelligent Agent Features
-
-### 1. Query Pattern Learning
-
-The agent automatically learns from successful queries and stores them for reuse:
+The orchestrator coordinates multiple agents to complete complex tasks:
 
 ```python
-# The agent learns patterns like this
-agent = SnowflakeDataAgent()
+# Example: Customer Analysis involves multiple coordinated steps
+1. Extract customer revenue data (Snowflake Agent)
+2. Perform segmentation analysis (Snowflake Agent)
+3. Run cohort analysis (Snowflake Agent)
+4. Generate insights (Future: Analysis Agent)
+5. Create visualizations (Future: Visualization Agent)
+6. Compile report (Future: Reporting Agent)
+```
 
-# Execute and learn from custom queries
-result = agent.execute_custom_query(your_sql, "Custom Analysis")
+### Intelligent Task Routing
 
-# Explicitly teach new patterns
-agent.learn_new_query(
-    name="territory_pipeline_analysis",
-    description="Analyze SC territory pipeline performance",
-    sql=complex_pipeline_query,
-    category="territory_analysis",
-    parameters=["territory_owner", "months_back"]
+```python
+# The orchestrator automatically routes tasks to appropriate agents
+task = AgentTask(
+    action="extract_customer_revenue_by_edition",
+    agent_type="snowflake_agent",
+    parameters={"months_back": 6}
 )
+
+# Orchestrator finds and executes on the right agent
+result = orchestrator.execute_task("snowflake_agent", task)
 ```
 
-### 2. Performance Optimization
+### Pattern Learning and Optimization
 
-The agent automatically optimizes queries using Snowflake best practices:
-
-- Adds proper customer filters (`internal_account_type = 'customer_account'`)
-- Optimizes date range filtering
-- Suggests query improvements
-- Tracks performance metrics
-
-### 3. Methodology Improvement
-
-The system tracks query success rates and suggests improvements:
+Agents learn from successful operations:
 
 ```python
-# View pattern performance
+# Agents automatically track query performance
+agent.learn_new_query(
+    name="custom_territory_analysis",
+    sql=your_successful_query,
+    category="territory_analysis"
+)
+
+# Future executions can reuse learned patterns
 patterns = agent.get_available_patterns()
-for pattern in patterns:
-    print(f"{pattern['name']}: {pattern['success_rate']:.1%} success rate")
 ```
 
-## 📊 Key Analysis Types
+## 📊 Available Analysis Types
 
-### Customer Revenue Analysis
+### 1. Customer Analysis
+- **Revenue by Edition**: SaaS vs Non-SaaS customer analysis
+- **OBS Segmentation**: Analysis by One Brex Segment (Finance)
+- **Cohort Analysis**: Customer lifecycle and retention patterns
 
-Analyzes revenue metrics by customer edition:
+### 2. Territory Performance
+- **SC Performance**: Solutions Consultant territory analysis
+- **Customer Attribution**: Revenue attribution to territories
+- **Territory Coverage**: Geographic and segment coverage analysis
 
-- **SaaS Customers**: Premium Edition, Enterprise Edition
-- **Non-SaaS Customers**: Essentials Edition variants
-- **Metrics**: Net revenue, SaaS revenue, GMV, customer counts
-- **Segmentation**: By OBS (One Brex Segment) and employee count
+### 3. Comprehensive Revenue Analysis
+- **Multi-Dimensional**: Revenue analysis across all segments and time periods
+- **Trend Analysis**: Historical patterns and growth trends
+- **Comparative Analysis**: Performance comparisons across dimensions
 
-### Territory Analysis
+## 🔧 Configuration
 
-Solutions Consultant performance metrics:
+### Global Configuration
 
-- Customer counts by territory
-- Revenue attribution (L3M, L6M, L12M)
-- SaaS vs Non-SaaS customer mix
-- Territory coverage and segment distribution
-
-### Cohort Analysis
-
-Customer lifecycle and retention analysis:
-
-- Acquisition cohort performance
-- Revenue evolution by vintage
-- Customer retention patterns
-- Product adoption trends
-
-## 📋 Data Schema Reference
-
-### Key Tables
-
-| Table | Purpose | Join Key |
-|-------|---------|----------|
-| `coredata.customer.customer_wide` | Master customer data | `customer_account_id` |
-| `coredata.customer.customers_monthly__net_revenue` | Monthly revenue by customer | `customer_account_id` |
-| `coredata.salesforce.accounts` | Salesforce account data | `customer_account_id` |
-| `coredata.salesforce.opportunities` | Sales pipeline | `salesforce_account_id` |
-| `coredata.cash.cash_customer__wide` | Cash/deposits data | `customer_account_id` |
-
-### Essential Filters
-
-```sql
--- Active customers only
-WHERE internal_account_type = 'customer_account'
-  AND status = 'active'
-
--- SaaS customers
-AND empower_edition IN ('Premium Edition', 'Enterprise Edition')
-
--- Non-SaaS customers
-AND empower_edition LIKE '%Essentials%'
-
--- Last 3 months revenue
-AND report_month_date >= DATEADD('month', -3, DATE_TRUNC('month', CURRENT_DATE))
-AND report_month_date < DATE_TRUNC('month', CURRENT_DATE)
-```
-
-## 🔧 Advanced Usage
-
-### Python API
-
-```python
-from snowflake_data_agent import SnowflakeDataAgent
-
-# Initialize agent
-agent = SnowflakeDataAgent()
-
-# Run specific analyses
-revenue_data = agent.extract_customer_revenue_by_edition(months_back=6)
-territory_data = agent.generate_solutions_consultant_analysis(['John Smith'])
-cohort_data = agent.extract_cohort_analysis(months_back=12, cohort_period='quarter')
-
-# Export results
-agent.export_to_csv(revenue_data, 'q4_revenue_analysis.csv')
-
-# Learn from new queries
-agent.learn_new_query(
-    name="custom_metric",
-    sql=your_sql,
-    category="metrics"
-)
-```
-
-### Configuration Customization
-
-Edit `snowflake_agent_config.yaml`:
+Each agent can be configured through YAML files:
 
 ```yaml
-# Custom output directory
-output_directory: "/path/to/your/exports"
-
-# Query optimization settings
-performance:
-  use_query_caching: true
-  optimize_joins: true
-  parallel_execution: true
-
-# Learning settings
+# agents/snowflake_agent/snowflake_agent_config.yaml
+default_warehouse: "COMPUTE_XSMALL_WH"
+output_directory: "./data_extracts"
 methodology_improvement:
   auto_learn_successful_queries: true
-  min_success_rate_threshold: 0.9
+  track_query_performance: true
 ```
+
+### Agent Registration
+
+New agents are automatically registered with the orchestrator:
+
+```python
+# agents/__init__.py - Add new agents here
+from agents.new_agent.new_agent import NewAgent
+
+def register_all_agents():
+    registry = AgentRegistry()
+    registry.register_agent(SnowflakeDataAgent())
+    registry.register_agent(NewAgent())  # New agent
+    return registry
+```
+
+## 🔄 Adding New Agents
+
+### 1. Create Agent Structure
+
+```bash
+mkdir -p agents/my_new_agent
+touch agents/my_new_agent/__init__.py
+touch agents/my_new_agent/my_agent.py
+touch agents/my_new_agent/config.yaml
+```
+
+### 2. Implement Agent Class
+
+```python
+# agents/my_new_agent/my_agent.py
+from shared.utils.base_agent import BaseAgent, AgentTask, AgentResult
+
+class MyNewAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("my_new_agent", "path/to/config.yaml")
+
+    def get_capabilities(self) -> List[str]:
+        return ["capability1", "capability2"]
+
+    def execute_task(self, task: AgentTask) -> AgentResult:
+        # Implement task execution logic
+        pass
+```
+
+### 3. Register with Orchestrator
+
+```python
+# agent_orchestrator.py
+def setup_agents(self):
+    # Register existing agents
+    snowflake_agent = SnowflakeDataAgent()
+    agent_registry.register_agent(snowflake_agent)
+
+    # Register your new agent
+    my_agent = MyNewAgent()
+    agent_registry.register_agent(my_agent)
+```
+
+## 📈 Advanced Usage
+
+### Custom Task Workflows
+
+```python
+from agent_orchestrator import AgentOrchestrator
+
+orchestrator = AgentOrchestrator()
+
+# Define complex multi-step workflow
+def custom_analysis_workflow(params):
+    results = {}
+
+    # Step 1: Data extraction
+    data_task = AgentTask(
+        action="extract_custom_data",
+        agent_type="snowflake_agent",
+        parameters=params
+    )
+    results['data'] = orchestrator.execute_task("snowflake_agent", data_task)
+
+    # Step 2: Analysis (future agent)
+    analysis_task = AgentTask(
+        action="perform_statistical_analysis",
+        agent_type="analysis_agent",
+        parameters={"data": results['data']}
+    )
+    results['analysis'] = orchestrator.execute_task("analysis_agent", analysis_task)
+
+    return results
+```
+
+### Inter-Agent Communication
+
+```python
+# Agents can communicate with each other
+class AdvancedAgent(BaseAgent):
+    def execute_task(self, task: AgentTask) -> AgentResult:
+        # Get data from Snowflake agent
+        snowflake_agent = agent_registry.get_agent("snowflake_agent")
+        data_task = AgentTask(...)
+        data_result = self.communicate_with_agent(snowflake_agent, data_task)
+
+        # Process the data
+        processed_result = self.process_data(data_result.data)
+        return AgentResult(success=True, data=processed_result)
+```
+
+## 📚 Documentation
+
+### For Snowflake Agent
+- **[Snowflake Schema](SNOWFLAKE_SCHEMA.md)**: Comprehensive database structure
+- **[Reference Queries](reference_queries.sql)**: Validated SQL patterns from data team
+- **[MCP Setup](SNOWFLAKE_MCP_TROUBLESHOOTING.md)**: Snowflake connection troubleshooting
+
+### System Documentation
+- **[Base Agent Class](shared/utils/base_agent.py)**: Agent development framework
+- **[Agent Registry](shared/utils/base_agent.py)**: Multi-agent coordination system
 
 ## 🐛 Troubleshooting
 
-### Snowflake Connection Issues
+### Common Issues
 
-1. **MCP Configuration**: See `SNOWFLAKE_MCP_TROUBLESHOOTING.md` for detailed setup guide
-2. **Authentication**: Ensure browser SSO is configured correctly
-3. **Permissions**: Verify access to `COREDATA` database and required schemas
+| Issue | Solution |
+|-------|----------|
+| Agent not found | Check agent registration in orchestrator |
+| Task execution fails | Verify agent capabilities and task parameters |
+| Import errors | Ensure Python path includes project root |
+| Snowflake connection | See MCP troubleshooting guide |
 
-### Query Execution Issues
+### Debug Mode
 
 ```bash
-# Check agent logs
-tail -f snowflake_agent.log
+# Run with verbose logging
+python agent_orchestrator.py --task customer-analysis --debug
 
-# Test basic connectivity
-python run_analysis.py custom --query "SELECT CURRENT_USER(), CURRENT_ROLE(), CURRENT_WAREHOUSE()"
-
-# Verify schema access
-python run_analysis.py schema
+# Check individual agent status
+python agent_orchestrator.py --list-agents --verbose
 ```
 
-### Common Error Solutions
+## 🛣️ Roadmap
 
-| Error | Solution |
-|-------|----------|
-| `snow: command not found` | Install Snowflake CLI |
-| `Authentication failed` | Check MCP browser SSO setup |
-| `Permission denied` | Verify database/schema access |
-| `Query timeout` | Increase timeout in config file |
+### Phase 2: Advanced Analytics Agents
+- **Analysis Agent**: Statistical analysis, regression, forecasting
+- **Visualization Agent**: Automated chart generation, dashboard creation
+- **Reporting Agent**: PDF reports, email automation
 
-## 📈 Performance Tips
+### Phase 3: Intelligence Agents
+- **Research Agent**: Web scraping, competitive analysis
+- **Recommendation Agent**: ML-powered insights and recommendations
+- **Monitoring Agent**: Automated alerting and anomaly detection
 
-1. **Use Date Filters**: Always limit query scope with date ranges
-2. **Filter Early**: Apply customer filters (`internal_account_type`, `status`) early
-3. **Optimize Joins**: Use appropriate join types and keys
-4. **Warehouse Size**: Use larger warehouses for complex queries
-5. **Query Caching**: Enable caching for repeated analyses
+### Phase 4: Integration & Deployment
+- **API Gateway**: RESTful API for agent access
+- **Scheduling System**: Cron-like job scheduling for agents
+- **Web Interface**: GUI for agent management and task execution
 
 ## 🤝 Contributing
 
-### Adding New Analysis Patterns
-
-1. Create SQL query following existing patterns
-2. Use the learning system: `python run_analysis.py learn-query`
-3. Test with various parameters
-4. Document in appropriate category
+### Adding New Agents
+1. Follow the agent template structure
+2. Inherit from `BaseAgent` class
+3. Implement required methods (`get_capabilities`, `execute_task`)
+4. Add comprehensive tests
+5. Update documentation
 
 ### Best Practices
-
-- Always include standard customer filters
-- Use consistent naming conventions
-- Add comprehensive descriptions
-- Test with different date ranges
-- Validate results against known metrics
-
-## 📚 Additional Resources
-
-- **Schema Documentation**: `SNOWFLAKE_SCHEMA.md`
-- **Reference Queries**: `reference_queries.sql`
-- **MCP Setup Guide**: `SNOWFLAKE_MCP_TROUBLESHOOTING.md`
-- **Snowflake Best Practices**: [Snowflake Documentation](https://docs.snowflake.com/en/user-guide/queries-best-practices)
+- Use type hints and docstrings
+- Follow the existing logging patterns
+- Implement proper error handling
+- Add configuration through YAML files
+- Include usage examples
 
 ## 📝 License
 
@@ -360,4 +361,4 @@ This project is internal to Brex and follows company data governance policies.
 
 ---
 
-**Need Help?** Check the troubleshooting guide or contact the data team for Snowflake access issues.
+**🚀 Ready to build intelligent automation? Start by exploring the Snowflake agent and then add your own specialized agents to the system!**

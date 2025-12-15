@@ -1,0 +1,3 @@
+# This directory will contain generated data exports
+# Files in this directory are ignored by git (see .gitignore)
+# This .gitkeep file ensures the directory structure is preserved

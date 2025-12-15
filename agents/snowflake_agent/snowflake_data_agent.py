@@ -21,6 +21,7 @@ Usage:
 
 import os
 import json
+import sys
 import logging
 import pandas as pd
 from datetime import datetime, timedelta
@@ -31,16 +32,10 @@ import sqlite3
 from dataclasses import dataclass, asdict
 import subprocess
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('snowflake_agent.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+# Add parent directories to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from shared.utils.base_agent import BaseAgent, AgentTask, AgentResult
 
 
 @dataclass
@@ -66,7 +61,7 @@ class DataExtractionResult:
     metadata: Dict[str, Any]
 
 
-class SnowflakeDataAgent:
+class SnowflakeDataAgent(BaseAgent):
     """
     Intelligent Snowflake data extraction agent for Solutions Consultant analysis.
 
@@ -82,12 +77,14 @@ class SnowflakeDataAgent:
         Args:
             config_path: Path to agent configuration file
         """
-        self.config_path = config_path or "snowflake_agent_config.yaml"
-        self.patterns_db_path = "query_patterns.db"
-        self.project_root = Path(__file__).parent
+        # Set default config path if not provided
+        if config_path is None:
+            config_path = Path(__file__).parent / "snowflake_agent_config.yaml"
 
-        # Load configuration
-        self.config = self._load_config()
+        super().__init__("snowflake_agent", str(config_path))
+
+        self.patterns_db_path = Path(__file__).parent / "query_patterns.db"
+        self.project_root = Path(__file__).parent.parent.parent
 
         # Initialize pattern database
         self._init_patterns_db()
@@ -95,29 +92,116 @@ class SnowflakeDataAgent:
         # Load reference patterns from existing queries
         self._load_reference_patterns()
 
-        logger.info("SnowflakeDataAgent initialized successfully")
+        self.logger.info("SnowflakeDataAgent initialized successfully")
 
-    def _load_config(self) -> Dict[str, Any]:
-        """Load agent configuration"""
-        default_config = {
-            "default_warehouse": "COMPUTE_XSMALL_WH",
-            "default_role": "BREX_NCHUA",
-            "output_directory": "./data_extracts",
-            "max_query_timeout": 300,
-            "auto_optimize_queries": True,
-            "common_filters": {
-                "active_customers_only": True,
-                "exclude_test_accounts": True,
-                "default_date_range_months": 3
-            }
-        }
+    def get_capabilities(self) -> List[str]:
+        """Return list of capabilities this agent provides"""
+        return [
+            "extract_customer_revenue_by_edition",
+            "extract_customer_revenue_by_obs",
+            "extract_cohort_analysis",
+            "generate_solutions_consultant_analysis",
+            "execute_custom_query",
+            "learn_new_query",
+            "export_to_csv"
+        ]
 
-        if os.path.exists(self.config_path):
-            with open(self.config_path, 'r') as f:
-                user_config = yaml.safe_load(f) or {}
-                default_config.update(user_config)
+    def execute_task(self, task: AgentTask) -> AgentResult:
+        """
+        Execute a task assigned to this agent
 
-        return default_config
+        Args:
+            task: The task to execute
+
+        Returns:
+            AgentResult containing execution results
+        """
+        start_time = datetime.now()
+
+        try:
+            self.logger.info(f"Executing task: {task.action}")
+
+            if task.action == "extract_customer_revenue_by_edition":
+                months_back = task.parameters.get("months_back", 3)
+                result = self.extract_customer_revenue_by_edition(months_back)
+                return AgentResult(
+                    success=True,
+                    data=result.data,
+                    metadata=result.metadata,
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            elif task.action == "extract_customer_revenue_by_obs":
+                months_back = task.parameters.get("months_back", 3)
+                result = self.extract_customer_revenue_by_obs(months_back)
+                return AgentResult(
+                    success=True,
+                    data=result.data,
+                    metadata=result.metadata,
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            elif task.action == "extract_cohort_analysis":
+                months_back = task.parameters.get("months_back", 3)
+                cohort_period = task.parameters.get("cohort_period", "year")
+                result = self.extract_cohort_analysis(months_back, cohort_period)
+                return AgentResult(
+                    success=True,
+                    data=result.data,
+                    metadata=result.metadata,
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            elif task.action == "generate_solutions_consultant_analysis":
+                sc_territories = task.parameters.get("sc_territories", None)
+                result = self.generate_solutions_consultant_analysis(sc_territories)
+                return AgentResult(
+                    success=True,
+                    data=result.data,
+                    metadata=result.metadata,
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            elif task.action == "execute_custom_query":
+                sql = task.parameters.get("sql")
+                description = task.parameters.get("description", "Custom Query")
+                if not sql:
+                    raise ValueError("SQL parameter required for custom query")
+                result = self.execute_custom_query(sql, description)
+                return AgentResult(
+                    success=True,
+                    data=result.data,
+                    metadata=result.metadata,
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            elif task.action == "learn_new_query":
+                name = task.parameters.get("name")
+                description = task.parameters.get("description")
+                sql = task.parameters.get("sql")
+                category = task.parameters.get("category", "custom")
+                parameters = task.parameters.get("parameters", [])
+
+                if not all([name, description, sql]):
+                    raise ValueError("name, description, and sql parameters required")
+
+                success = self.learn_new_query(name, description, sql, category, parameters)
+                return AgentResult(
+                    success=success,
+                    data={"pattern_learned": success},
+                    execution_time=(datetime.now() - start_time).total_seconds()
+                )
+
+            else:
+                raise ValueError(f"Unknown action: {task.action}")
+
+        except Exception as e:
+            self.logger.error(f"Task execution failed: {e}")
+            return AgentResult(
+                success=False,
+                error_message=str(e),
+                execution_time=(datetime.now() - start_time).total_seconds()
+            )
 
     def _init_patterns_db(self):
         """Initialize SQLite database for storing query patterns"""
@@ -160,7 +244,7 @@ class SnowflakeDataAgent:
         reference_file = self.project_root / "reference_queries.sql"
 
         if not reference_file.exists():
-            logger.warning("reference_queries.sql not found")
+            self.logger.warning("reference_queries.sql not found")
             return
 
         with open(reference_file, 'r') as f:
@@ -260,9 +344,9 @@ class SnowflakeDataAgent:
                 pattern.success_rate
             ))
             conn.commit()
-            logger.info(f"Stored query pattern: {pattern.name}")
+            self.logger.info(f"Stored query pattern: {pattern.name}")
         except Exception as e:
-            logger.error(f"Failed to store pattern {pattern.name}: {e}")
+            self.logger.error(f"Failed to store pattern {pattern.name}: {e}")
         finally:
             conn.close()
 
@@ -280,7 +364,7 @@ class SnowflakeDataAgent:
         start_time = datetime.now()
 
         try:
-            logger.info(f"Executing query: {description}")
+            self.logger.info(f"Executing query: {description}")
 
             # Create temporary SQL file
             temp_sql_file = f"temp_query_{int(start_time.timestamp())}.sql"
@@ -298,7 +382,7 @@ class SnowflakeDataAgent:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=self.config["max_query_timeout"]
+                timeout=self.config.get("max_query_timeout", 300)
             )
 
             # Clean up temp file
@@ -326,7 +410,7 @@ class SnowflakeDataAgent:
             )
 
         except Exception as e:
-            logger.error(f"Query execution failed: {e}")
+            self.logger.error(f"Query execution failed: {e}")
             raise
 
     def extract_customer_revenue_by_edition(self, months_back: int = 3) -> DataExtractionResult:
@@ -443,10 +527,10 @@ class SnowflakeDataAgent:
             )
 
             self._store_query_pattern(pattern)
-            logger.info(f"Learned new query pattern: {name}")
+            self.logger.info(f"Learned new query pattern: {name}")
             return True
         except Exception as e:
-            logger.error(f"Failed to learn new query pattern {name}: {e}")
+            self.logger.error(f"Failed to learn new query pattern {name}: {e}")
             return False
 
     def _get_query_pattern(self, name: str) -> Optional[QueryPattern]:
@@ -527,8 +611,8 @@ class SnowflakeDataAgent:
             Full path to the exported file
         """
         # Ensure output directory exists
-        output_dir = Path(self.config["output_directory"])
-        output_dir.mkdir(exist_ok=True)
+        output_dir = Path(self.config.get("output_directory", "./data_extracts"))
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         # Create full path
         full_path = output_dir / filename
@@ -552,7 +636,7 @@ class SnowflakeDataAgent:
         with open(metadata_path, 'w') as f:
             json.dump(metadata, f, indent=2)
 
-        logger.info(f"Exported data to {full_path} ({len(result.data)} rows)")
+        self.logger.info(f"Exported data to {full_path} ({len(result.data)} rows)")
         return str(full_path)
 
     def get_available_patterns(self) -> List[Dict[str, Any]]:
@@ -594,41 +678,9 @@ class SnowflakeDataAgent:
         result = self.execute_snowflake_query(sql, description)
 
         # Log the successful execution for potential learning
-        logger.info(f"Custom query executed successfully: {description}")
+        self.logger.info(f"Custom query executed successfully: {description}")
 
         return result
-
-    def optimize_query_for_performance(self, sql: str) -> str:
-        """
-        Apply performance optimization patterns to a SQL query
-
-        Args:
-            sql: SQL query to optimize
-
-        Returns:
-            Optimized SQL query
-        """
-        optimized = sql
-
-        # Apply common optimizations based on Snowflake best practices
-        optimizations = [
-            # Ensure proper filtering early
-            (
-                "FROM coredata.customer.customer_wide",
-                "FROM coredata.customer.customer_wide\nWHERE internal_account_type = 'customer_account'\n  AND status = 'active'"
-            ),
-            # Add date filtering hints
-            (
-                "JOIN coredata.customer.customers_monthly__net_revenue",
-                "JOIN coredata.customer.customers_monthly__net_revenue"
-            )
-        ]
-
-        for old, new in optimizations:
-            if old in sql and "WHERE internal_account_type = 'customer_account'" not in sql:
-                optimized = optimized.replace(old, new)
-
-        return optimized
 
     def generate_solutions_consultant_analysis(self, sc_territories: List[str] = None) -> DataExtractionResult:
         """
@@ -767,6 +819,6 @@ if __name__ == "__main__":
             print(f"Execution time: {result.execution_time:.2f} seconds")
 
     except Exception as e:
-        logger.error(f"Error executing action {args.action}: {e}")
+        agent.logger.error(f"Error executing action {args.action}: {e}")
         print(f"Error: {e}")
         exit(1)
