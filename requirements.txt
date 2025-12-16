@@ -1,0 +1,94 @@
+# Global Multi-Agent System Dependencies
+# Shared dependencies for all agents in the system
+
+# ============================================================================
+# CORE DEPENDENCIES - Essential for all agents
+# ============================================================================
+
+# Data manipulation and analysis
+pandas>=2.0.0
+
+# Configuration file parsing
+PyYAML>=6.0
+
+# Date and time utilities
+python-dateutil>=2.8.2
+
+# ============================================================================
+# DATABASE & API CONNECTIVITY - For data retrieval agents
+# ============================================================================
+
+# Snowflake database connectivity
+snowflake-connector-python>=3.0.0
+
+# HTTP client for API integrations
+requests>=2.28.0
+
+# ============================================================================
+# TEMPLATING & PROCESSING - For advanced query and document processing
+# ============================================================================
+
+# Advanced templating for SQL queries and document generation
+jinja2>=3.1.0
+
+# ============================================================================
+# TESTING FRAMEWORK - For all agent testing and validation
+# ============================================================================
+
+# Core testing framework
+pytest>=7.0.0
+
+# Test coverage analysis
+pytest-cov>=4.0.0
+
+# ============================================================================
+# GOOGLE SERVICES - For existing Granola agent and future integrations
+# ============================================================================
+
+# Google API client libraries (for existing Granola agent)
+google-auth>=2.17.0
+google-auth-oauthlib>=1.0.0
+google-api-python-client>=2.86.0
+
+# ============================================================================
+# DOCUMENT PROCESSING - For PDF generation and document handling
+# ============================================================================
+
+# PDF generation (used in Solutions Consultants agent)
+reportlab>=4.0.0
+
+# Excel file handling
+openpyxl>=3.1.0
+
+# ============================================================================
+# UTILITIES - Common utilities across agents
+# ============================================================================
+
+# Environment variable management
+python-dotenv>=1.0.0
+
+# Progress bars for long-running operations
+tqdm>=4.65.0
+
+# Enhanced logging capabilities
+colorlog>=6.7.0
+
+# ============================================================================
+# FUTURE AGENT DEPENDENCIES - Commonly needed libraries
+# ============================================================================
+
+# Machine learning and data science (for future analysis agents)
+scikit-learn>=1.3.0
+numpy>=1.24.0
+
+# Visualization (for future reporting agents)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Web scraping and automation (for future automation agents)
+selenium>=4.10.0
+beautifulsoup4>=4.12.0
+
+# Database utilities (for future database agents)
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0

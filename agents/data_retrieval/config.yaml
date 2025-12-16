@@ -1,0 +1,42 @@
+# Data Retrieval Agent Configuration
+
+# Snowflake Connection (uses global MCP connection)
+snowflake:
+  default_warehouse: "COMPUTE_XSMALL_WH"
+  default_role: "BREX_NCHUA"
+  default_database: "COREDATA"
+  query_timeout: 300
+  use_mcp: true
+
+# Output Configuration
+output:
+  default_format: "csv"
+  include_metadata: true
+  timestamp_columns: true
+  max_rows_in_memory: 100000
+
+# Query Templates Directory
+templates:
+  base_path: "./snowflake_queries"
+  customer_queries: "customer"
+  revenue_queries: "revenue"
+  territory_queries: "territory"
+  
+# Business Logic
+business_rules:
+  exclude_test_accounts: true
+  active_customers_only: true
+  default_date_range_months: 3
+  
+# Performance Settings
+performance:
+  enable_caching: true
+  cache_ttl_minutes: 15
+  parallel_execution: false
+  optimize_queries: true
+  
+# Common Filters
+default_filters:
+  exclude_internal_accounts: true
+  min_revenue_threshold: 0
+  active_status_only: true
