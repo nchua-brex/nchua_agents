@@ -1,0 +1,69 @@
+# Snowflake Data Agent Configuration
+
+# Snowflake Connection Settings
+default_warehouse: "COMPUTE_XSMALL_WH"
+default_role: "BREX_NCHUA"
+default_database: "COREDATA"
+
+# Output Settings
+output_directory: "./data_extracts"
+max_query_timeout: 300  # seconds
+auto_optimize_queries: true
+
+# Common Filters and Defaults
+common_filters:
+  active_customers_only: true
+  exclude_test_accounts: true
+  default_date_range_months: 3
+
+# Data Quality Settings
+data_quality_checks:
+  validate_customer_count: true
+  check_revenue_totals: true
+  flag_anomalies: true
+
+# Learning and Improvement
+methodology_improvement:
+  auto_learn_successful_queries: true
+  track_query_performance: true
+  suggest_optimizations: true
+  min_success_rate_threshold: 0.8
+
+# Export Formats
+export_formats:
+  default_format: "csv"
+  include_metadata: true
+  timestamp_in_filename: true
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  log_file: "snowflake_agent.log"
+  max_log_size_mb: 10
+
+# Solutions Consultant Analysis Settings
+sc_analysis:
+  default_territories: []
+  include_pipeline_data: true
+  territory_grouping: "by_owner"
+  revenue_attribution: "last_3_months"
+
+# Performance Optimization
+performance:
+  use_query_caching: true
+  optimize_joins: true
+  add_performance_hints: true
+  parallel_execution: false  # Set to true if supported
+
+# Predefined Analysis Categories
+analysis_categories:
+  - name: "customer_segmentation"
+    description: "Customer analysis by edition, OBS, and cohorts"
+  - name: "revenue_analysis"
+    description: "Revenue trends and performance metrics"
+  - name: "territory_analysis"
+    description: "Solutions Consultant territory and performance analysis"
+  - name: "cohort_analysis"
+    description: "Customer lifecycle and retention analysis"
+  - name: "custom_analysis"
+    description: "Custom queries and ad-hoc analysis"

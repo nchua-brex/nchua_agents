@@ -1,0 +1,12 @@
+# Cursor Rules and MCP Configuration
+
+## MCP Servers Configuration
+# Add Hex MCP server for direct dashboard access
+# Server: hex
+# Type: http
+# URL: https://brex.hex.tech/mcp
+
+# Note: Cursor's MCP integration may require enabling in settings
+# Go to Cursor Settings → Features → Model Context Protocol
+
+

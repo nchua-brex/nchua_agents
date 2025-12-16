@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+# Logs
+*.log
+snowflake_agent.log
+
+# Data exports (keep structure but not data)
+data_extracts/*.csv
+data_extracts/*.xlsx
+data_extracts/*.json
+!data_extracts/.gitkeep
+
+# Temporary files
+temp_*.sql
+*.tmp
+
+# Local configuration overrides
+*_local.yaml
+*_local.yml
+
+# Query pattern database (contains learned patterns, may want to include this)
+# query_patterns.db
+
+# Sensitive configuration (if any)
+secrets.yaml
+.env
+
+# Test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Credit card subdirectory (seems to be unrelated)
+credit_card/
+
+# Large files
+*.pdf
+*.zip
+*.tar.gz
