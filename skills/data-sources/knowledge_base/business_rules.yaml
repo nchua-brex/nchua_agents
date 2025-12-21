@@ -1,0 +1,131 @@
+# Brex Data Team Business Rules
+# Extracted from validated SQL patterns and comments
+
+# Core Filters - Apply to ALL customer analysis queries
+core_filters:
+  customer_account_type:
+    rule: "internal_account_type = 'customer_account'"
+    purpose: "Filter for actual customers only"
+    always_apply: true
+
+  active_customers:
+    rule: "status = 'active'"
+    purpose: "Focus on active customers"
+    always_apply: true
+
+  exclude_test_data:
+    rule: "customer_type != 'test'"
+    purpose: "Exclude test/demo accounts"
+    always_apply: true
+
+# Edition Classification Rules
+edition_rules:
+  essentials_normalization:
+    rule: "CASE WHEN empower_edition LIKE '%Essentials%' THEN 'Essentials Edition' ELSE empower_edition END"
+    purpose: "Normalize Essentials edition variations"
+    applies_to: ["customer_edition_analysis", "customer_obs_analysis", "customer_cohort_analysis"]
+
+  saas_editions:
+    values: ["Premium Edition", "Enterprise Edition"]
+    purpose: "SaaS revenue generating editions"
+
+  non_saas_editions:
+    pattern: "Any edition containing 'Essentials'"
+    purpose: "Non-SaaS editions"
+
+# Date Range Patterns
+date_patterns:
+  l3m_pattern:
+    rule: "DATEADD('month', -3, DATE_TRUNC('month', CURRENT_DATE)) to < DATE_TRUNC('month', CURRENT_DATE)"
+    purpose: "Last 3 Months analysis"
+    common_usage: "Recent performance metrics"
+
+  fiscal_year:
+    q1_months: [2, 3, 4]
+    q2_months: [5, 6, 7]
+    q3_months: [8, 9, 10]
+    q4_months: [11, 12, 1]
+    year_adjustment: "If month = 1, fiscal_year = calendar_year - 1"
+
+  default_analysis_window:
+    rule: "DATE >= CURRENT_DATE - INTERVAL '2 years'"
+    purpose: "Performance optimization for large tables"
+    applies_when: "No specific date filter provided"
+
+# Table Join Patterns
+join_patterns:
+  primary_customer_join:
+    key: "customer_account_id"
+    note: "Use customer_account_id, NOT customer_id"
+
+  salesforce_account_join:
+    key: "salesforce_account_id"
+    filter: "is_primary_salesforce_account_for_cuacc = TRUE"
+    purpose: "Ensure one-to-one customer to Salesforce account mapping"
+
+# Segment Classifications
+segmentation:
+  one_brex_segment:
+    name: "Finance segmentation"
+    values: ["Early Stage", "Growth", "Mid-Market", "Enterprise"]
+    filter: "one_brex_segment IS NOT NULL"
+    note: "OBS is Finance's segmentation, different from Revenue Operations segments"
+
+  sales_segments:
+    cse: "closed_owner_second_level_team = 'Client Sales'"
+    mm: "closed_owner_second_level_team = 'MM'"
+    ent: "closed_owner_second_level_team = 'ENT'"
+    filter: "closed_owner_second_level_team IN ('Client Sales','ENT','MM')"
+
+# Revenue Analysis Rules
+revenue_rules:
+  empower_revenue:
+    field: "empower_revenue"
+    purpose: "SaaS subscription revenue"
+    positive_filter: "empower_revenue > 0"
+
+  net_revenue:
+    field: "net_revenue"
+    purpose: "Total customer revenue including fees"
+
+  cleared_gmv:
+    field: "cleared_gmv_amount"
+    purpose: "Gross transaction volume"
+
+# Solutions Consultant Logic
+solutions_consultant:
+  attribution_cutoff: "2025-07-02"
+  pre_cutoff_rule: "sc_name IS NOT NULL AND is_sc_actively_working = true"
+  post_cutoff_rule: "sc_name IS NOT NULL"
+  purpose: "Account for SC attribution logic changes"
+
+# Deal Classification
+deal_classification:
+  cross_sell:
+    condition: "had_prior_saas_revenue = 1"
+    definition: "Deal to customer with prior SaaS revenue"
+
+  upsell:
+    condition: "had_prior_saas_revenue = 0"
+    definition: "Deal to customer without prior SaaS revenue (net new SaaS)"
+
+# Opportunity Filters
+opportunity_filters:
+  record_type: "record_type_name = 'Empower'"
+  won_deals: "is_won = true"
+  exclude_duplicates: "stage_name NOT IN ('DQ: Duplicate')"
+
+# Data Quality Rules
+data_quality:
+  percentage_calculations:
+    rule: "Use window functions: value / SUM(value) OVER ()"
+    purpose: "Accurate percentage calculations across groups"
+
+  aggregation_order:
+    rule: "GROUP BY before window functions"
+    purpose: "Proper SQL execution order"
+
+  null_handling:
+    cohort_analysis: "cohort_start_date IS NOT NULL"
+    obs_analysis: "one_brex_segment IS NOT NULL"
+    purpose: "Exclude records with missing key dimensions"

@@ -19,7 +19,9 @@
   ],
   "author": "Business Intelligence Team",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
   "devDependencies": {},
   "engines": {
     "node": ">=14.0.0"

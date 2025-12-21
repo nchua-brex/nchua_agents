@@ -1,0 +1,145 @@
+# Brex Snowflake Table Definitions
+# Core tables and their business context
+
+primary_tables:
+  customer_wide:
+    full_name: "coredata.customer.customer_wide"
+    purpose: "Master customer table with profile and segment data"
+    primary_key: "customer_account_id"
+    key_fields:
+      - customer_account_id: "Unique customer identifier"
+      - dba_name: "Customer business name"
+      - empower_edition: "SaaS edition (Premium, Enterprise, Essentials)"
+      - one_brex_segment: "Finance segmentation (Early Stage, Growth, MM, Enterprise)"
+      - employee_count: "Customer company size"
+      - cohort_start_date: "Customer acquisition date"
+      - status: "Customer status (active, inactive, etc.)"
+      - internal_account_type: "Account type (customer_account for real customers)"
+    common_filters:
+      - "internal_account_type = 'customer_account'"
+      - "status = 'active'"
+
+  customers_monthly_net_revenue:
+    full_name: "coredata.customer.customers_monthly__net_revenue"
+    purpose: "Monthly revenue metrics by customer"
+    primary_key: ["customer_account_id", "report_month_date"]
+    key_fields:
+      - customer_account_id: "Links to customer_wide"
+      - report_month_date: "Revenue reporting month"
+      - net_revenue: "Total customer revenue"
+      - empower_revenue: "SaaS subscription revenue"
+      - cleared_gmv_amount: "Gross transaction volume"
+    common_joins:
+      - table: "customer_wide"
+        on: "customer_account_id"
+        type: "LEFT JOIN"
+    date_filters:
+      - l3m: "report_month_date >= DATEADD('month', -3, DATE_TRUNC('month', CURRENT_DATE)) AND report_month_date < DATE_TRUNC('month', CURRENT_DATE)"
+
+  salesforce_opportunities:
+    full_name: "coredata.salesforce.opportunities"
+    purpose: "Salesforce opportunity and deal data"
+    primary_key: "opportunity_id"
+    key_fields:
+      - opportunity_id: "Unique opportunity identifier"
+      - name: "Opportunity name"
+      - owner_name: "Account Executive name"
+      - closed_owner_second_level_team: "Sales segment (Client Sales, MM, ENT)"
+      - close_date: "Deal close date"
+      - arr_deal_size: "Annual Recurring Revenue value"
+      - sc_name: "Solutions Consultant name"
+      - is_sc_actively_working: "SC active flag (pre-2025-07-02 logic)"
+      - record_type_name: "Opportunity type (Empower for SaaS)"
+      - is_won: "Won deal flag"
+      - stage_name: "Deal stage"
+      - salesforce_account_id: "Links to Salesforce accounts"
+    common_filters:
+      - "record_type_name = 'Empower'"
+      - "is_won = true"
+      - "closed_owner_second_level_team IN ('Client Sales','ENT','MM')"
+      - "stage_name NOT IN ('DQ: Duplicate')"
+
+  salesforce_accounts:
+    full_name: "coredata.salesforce.accounts"
+    purpose: "Salesforce account data"
+    primary_key: "salesforce_account_id"
+    key_fields:
+      - salesforce_account_id: "Salesforce account ID"
+      - customer_account_id: "Links to customer_wide"
+      - is_primary_salesforce_account_for_cuacc: "Primary account flag"
+    common_filters:
+      - "is_primary_salesforce_account_for_cuacc = TRUE"
+
+# Solutions Consultant specific tables
+sc_tables:
+  ae_cse_account_holding_periods:
+    full_name: "salesforce.public.ae_cse_account_holding_periods"
+    purpose: "SC account assignment periods"
+    key_fields:
+      - account_holding_period_id: "Unique period identifier"
+      - customer_account_id: "Customer being served"
+      - opportunity_id_determining_account_holding: "Opportunity that created assignment"
+      - owner_segment_territory_role: "Territory segment"
+      - account_holding_period_start_date: "Assignment start"
+      - account_holding_period_end_date: "Assignment end"
+
+  account_holding_periods_monthly:
+    full_name: "salesforce.public.account_holding_periods_monthly_gmv_and_revenue"
+    purpose: "Monthly commission and revenue data by holding period"
+    key_fields:
+      - account_holding_period_id: "Links to holding periods"
+      - calendar_month: "Revenue month"
+      - rep_receiving_comm_rev_credit: "Rep email getting credit"
+      - rep_manager_receiving_comm_rev_credit: "Manager email"
+      - commissionable_revenue: "Total commissionable revenue"
+      - cse_commissionable_revenue: "CSE specific revenue"
+      - saas_commissionable_revenue: "SaaS revenue component"
+      - cleared_gmv_amount: "Transaction volume"
+
+  workday_employees:
+    full_name: "workday.workday.employees"
+    purpose: "Employee directory for name resolution"
+    key_fields:
+      - email: "Employee email (join key)"
+      - first_name: "First name"
+      - last_name: "Last name"
+
+# Common Join Patterns
+join_patterns:
+  customer_revenue_analysis:
+    base_table: "coredata.customer.customer_wide"
+    joins:
+      - table: "coredata.customer.customers_monthly__net_revenue"
+        on: "customer_account_id"
+        type: "LEFT JOIN"
+        additional_conditions:
+          - "nrr.report_month_date >= DATEADD('month', -3, DATE_TRUNC('month', CURRENT_DATE))"
+          - "nrr.report_month_date < DATE_TRUNC('month', CURRENT_DATE)"
+
+  opportunity_customer_analysis:
+    base_table: "coredata.salesforce.opportunities"
+    joins:
+      - table: "coredata.salesforce.accounts"
+        on: "salesforce_account_id"
+        type: "LEFT JOIN"
+        additional_conditions:
+          - "acc.is_primary_salesforce_account_for_cuacc = TRUE"
+      - table: "coredata.customer.customers_monthly__net_revenue"
+        on: "acc.customer_account_id = rev.customer_account_id"
+        type: "LEFT JOIN"
+
+  sc_commission_analysis:
+    base_table: "salesforce.public.ae_cse_account_holding_periods"
+    joins:
+      - table: "salesforce.public.account_holding_periods_monthly_gmv_and_revenue"
+        on: "account_holding_period_id"
+        type: "LEFT JOIN"
+      - table: "coredata.customer.customer_wide"
+        on: "customer_account_id"
+        type: "LEFT JOIN"
+      - table: "coredata.salesforce.opportunities"
+        on: "ahp.opportunity_id_determining_account_holding = opp.opportunity_id"
+        type: "LEFT JOIN"
+      - table: "workday.workday.employees"
+        on: "LOWER(monthly.rep_receiving_comm_rev_credit) = LOWER(we.email)"
+        type: "LEFT JOIN"

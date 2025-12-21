@@ -1,0 +1,138 @@
+# Data Validation Patterns for Brex Analysis
+# Expected ranges and quality checks for query results
+
+# Customer Edition Analysis Validation
+customer_edition_analysis:
+  expected_editions:
+    - "Premium Edition"
+    - "Enterprise Edition"
+    - "Essentials Edition"
+  data_quality_checks:
+    - name: "total_customers_positive"
+      rule: "SUM(num_customers) > 0"
+      message: "No customers found - check date range and filters"
+    - name: "revenue_positive"
+      rule: "SUM(saas_revenue) > 0"
+      message: "No SaaS revenue found - check empower_revenue calculations"
+    - name: "percentages_sum_to_100"
+      rule: "ABS(SUM(perc_of_customers) - 1.0) < 0.01"
+      message: "Customer percentages don't sum to 100%"
+  expected_ranges:
+    saas_revenue:
+      min: 1000000  # $1M minimum for sanity check
+      message: "SaaS revenue seems low - check date range"
+    avg_employee_count:
+      min: 1
+      max: 100000
+      message: "Employee count outside expected range"
+
+# Cross-sell vs Upsell Analysis Validation
+cross_sell_upsell_analysis:
+  expected_deal_types:
+    - "Cross-sell"
+    - "Upsell"
+  data_quality_checks:
+    - name: "all_deals_classified"
+      rule: "COUNT(*) = COUNT(deal_type)"
+      message: "Some deals not classified as Cross-sell or Upsell"
+    - name: "arr_positive"
+      rule: "AVG(arr_deal_size) > 0"
+      message: "ARR deal sizes should be positive"
+    - name: "fiscal_quarters_valid"
+      rule: "fiscal_quarter IN ('Q1', 'Q2', 'Q3', 'Q4')"
+      message: "Invalid fiscal quarter calculation"
+  expected_ranges:
+    arr_deal_size:
+      min: 1000    # $1K minimum deal size
+      max: 5000000 # $5M maximum deal size for outlier detection
+      message: "ARR deal size outside expected range"
+
+# Solutions Consultant Analysis Validation
+sc_commission_analysis:
+  data_quality_checks:
+    - name: "rep_names_not_null"
+      rule: "COUNT(*) = COUNT(rep_name)"
+      message: "Missing rep names - check workday employee join"
+    - name: "revenue_months_valid"
+      rule: "revenue_month >= '2025-02-01'"
+      message: "Revenue months before expected start date"
+    - name: "positive_customers"
+      rule: "AVG(unique_customers) > 0"
+      message: "No customers assigned to reps"
+  expected_ranges:
+    commissionable_revenue:
+      min: 0
+      message: "Negative commissionable revenue detected"
+    unique_customers:
+      min: 1
+      max: 1000
+      message: "Unusual number of customers per rep"
+
+# One Brex Segment Analysis Validation
+obs_analysis:
+  expected_segments:
+    - "Early Stage"
+    - "Growth"
+    - "Mid-Market"
+    - "Enterprise"
+  data_quality_checks:
+    - name: "all_segments_present"
+      rule: "COUNT(DISTINCT obs) >= 3"
+      message: "Missing expected OBS segments"
+    - name: "segment_revenue_logical"
+      rule: "Enterprise segment should have highest avg revenue per customer"
+      message: "OBS segment revenue patterns unexpected"
+
+# General Validation Rules
+general_validation:
+  date_range_checks:
+    - name: "reasonable_date_range"
+      rule: "DATEDIFF('day', MIN(date_field), MAX(date_field)) BETWEEN 1 AND 1095"
+      message: "Date range outside reasonable bounds (1 day to 3 years)"
+    - name: "no_future_dates"
+      rule: "MAX(date_field) <= CURRENT_DATE"
+      message: "Future dates detected in analysis"
+
+  revenue_consistency:
+    - name: "net_revenue_includes_saas"
+      rule: "SUM(net_revenue) >= SUM(empower_revenue)"
+      message: "Net revenue should be >= SaaS revenue"
+    - name: "no_extreme_outliers"
+      rule: "MAX(revenue_per_customer) <= 100 * MEDIAN(revenue_per_customer)"
+      message: "Extreme revenue outliers detected - check data quality"
+
+# Performance Expectations
+performance_benchmarks:
+  query_execution_time:
+    customer_edition_analysis: 30  # seconds
+    cross_sell_upsell_analysis: 45
+    sc_commission_analysis: 60
+    customer_obs_analysis: 35
+
+  result_set_sizes:
+    customer_edition_analysis:
+      min_rows: 1
+      max_rows: 10
+      message: "Expected 3-5 edition types"
+    cross_sell_upsell_analysis:
+      min_rows: 10
+      max_rows: 10000
+      message: "Deal count outside expected range"
+
+# Business Logic Validation
+business_logic:
+  fiscal_year_consistency:
+    rule: "Fiscal year should align with close_date"
+    check: |
+      CASE
+        WHEN MONTH(close_date) = 1 THEN YEAR(close_date) - 1
+        ELSE YEAR(close_date)
+      END = fiscal_year
+
+  solutions_consultant_logic:
+    pre_cutoff: "close_date <= '2025-07-02' requires is_sc_actively_working = true"
+    post_cutoff: "close_date > '2025-07-02' only requires sc_name IS NOT NULL"
+
+  edition_classification:
+    essentials_rule: "Any edition LIKE '%Essentials%' should be classified as 'Essentials Edition'"
+    saas_rule: "Premium and Enterprise editions generate empower_revenue"
