@@ -22,7 +22,9 @@
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "puppeteer": "^24.34.0"
+  },
   "engines": {
     "node": ">=14.0.0"
   }

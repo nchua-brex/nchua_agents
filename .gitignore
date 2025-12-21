@@ -82,6 +82,9 @@ htmlcov/
 # Credit card subdirectory (seems to be unrelated)
 credit_card/
 
+# Solution Consultants Attainment directory (should not be updated)
+Solution Consultants Attainment/
+
 # Large files
 *.pdf
 *.zip
