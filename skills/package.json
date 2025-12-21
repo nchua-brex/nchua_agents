@@ -1,0 +1,27 @@
+{
+  "name": "multi-agent-skills",
+  "version": "1.0.0",
+  "description": "Skill-based architecture for multi-agent business workflows",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test_python_bridge.js",
+    "test-bridge": "node test_python_bridge.js bridge",
+    "test-workflow": "node test_python_bridge.js workflow",
+    "list-skills": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./'); console.log(JSON.stringify(r.getAvailableSkills(), null, 2));\"",
+    "health-check": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./').then(() => r.healthCheckAllSkills()).then(console.log);\""
+  },
+  "keywords": [
+    "multi-agent",
+    "business-intelligence",
+    "skills",
+    "orchestration",
+    "python-bridge"
+  ],
+  "author": "Business Intelligence Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
