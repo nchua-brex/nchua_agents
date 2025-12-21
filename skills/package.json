@@ -7,8 +7,8 @@
     "test": "node test_python_bridge.js",
     "test-bridge": "node test_python_bridge.js bridge",
     "test-workflow": "node test_python_bridge.js workflow",
-    "list-skills": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./'); console.log(JSON.stringify(r.getAvailableSkills(), null, 2));\"",
-    "health-check": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./').then(() => r.healthCheckAllSkills()).then(console.log);\""
+    "list-skills": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./').then(() => console.log(JSON.stringify(r.getAvailableSkills(), null, 2))).catch(console.error);\"",
+    "health-check": "node -e \"const {SkillRegistry} = require('./core/skill_registry'); const r = new SkillRegistry(); r.loadSkillsFromDirectory('./').then(() => r.healthCheckAllSkills()).then(console.log).catch(console.error);\""
   },
   "keywords": [
     "multi-agent",

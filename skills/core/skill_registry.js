@@ -168,6 +168,136 @@ class SkillRegistry {
     }
 
     /**
+     * Load skills from directory structure
+     * @param {string} baseDir - Base directory to scan for skills
+     */
+    async loadSkillsFromDirectory(baseDir) {
+        const fs = require('fs').promises;
+        const path = require('path');
+
+        const skillDirectories = [
+            'data-sources',
+            'document-processing',
+            'analysis',
+            'workflows'
+        ];
+
+        let loadedCount = 0;
+
+        for (const category of skillDirectories) {
+            const categoryPath = path.join(baseDir, category);
+
+            try {
+                const files = await fs.readdir(categoryPath);
+
+                for (const file of files) {
+                    if (file.endsWith('_skill.js')) {
+                        try {
+                            const skillPath = path.resolve(categoryPath, file);
+                            // Clear require cache for fresh loading
+                            delete require.cache[require.resolve(skillPath)];
+                            const skillModule = require(skillPath);
+
+                            // Handle different export patterns
+                            const skillClasses = [];
+                            if (skillModule.default) {
+                                skillClasses.push(skillModule.default);
+                            }
+
+                            // Look for exported skill classes
+                            Object.values(skillModule).forEach(exportedItem => {
+                                if (typeof exportedItem === 'function' &&
+                                    exportedItem.name &&
+                                    exportedItem.name.includes('Skill')) {
+                                    skillClasses.push(exportedItem);
+                                }
+                            });
+
+                            // Instantiate and register skills
+                            for (const SkillClass of skillClasses) {
+                                try {
+                                    const skillInstance = new SkillClass();
+                                    this.register(skillInstance, category);
+                                    loadedCount++;
+                                } catch (error) {
+                                    this.logger.warn(`Failed to instantiate skill from ${file}: ${error.message}`);
+                                }
+                            }
+
+                        } catch (error) {
+                            this.logger.warn(`Failed to load skill file ${file}: ${error.message}`);
+                        }
+                    }
+                }
+            } catch (error) {
+                // Directory might not exist, continue
+                this.logger.info(`Skill directory ${category} not found, skipping`);
+            }
+        }
+
+        this.logger.info(`Loaded ${loadedCount} skills from ${baseDir}`);
+
+        // Wait a moment for all registrations to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        return loadedCount;
+    }
+
+    /**
+     * Get summary of all available skills organized by category
+     */
+    getAvailableSkills() {
+        const summary = {
+            totalSkills: this.skills.size,
+            categories: {},
+            timestamp: new Date().toISOString()
+        };
+
+        for (const [category, skillNames] of this.skillCategories) {
+            summary.categories[category] = {
+                count: skillNames.size,
+                skills: Array.from(skillNames).map(name => {
+                    const skill = this.skills.get(name);
+                    return {
+                        name: skill.name,
+                        description: skill.description || 'No description available',
+                        capabilities: skill.capabilities || []
+                    };
+                })
+            };
+        }
+
+        return summary;
+    }
+
+    /**
+     * Health check all skills
+     */
+    async healthCheckAllSkills() {
+        const healthStatus = await this.healthCheck();
+
+        // Enhanced health check with skill-specific validation
+        for (const [skillName, skill] of this.skills) {
+            try {
+                // Check if skill can provide basic info
+                const info = skill.getInfo ? skill.getInfo() : { name: skillName };
+                healthStatus.skills[skillName] = {
+                    status: 'healthy',
+                    info: info
+                };
+            } catch (error) {
+                healthStatus.skills[skillName] = {
+                    status: 'unhealthy',
+                    error: error.message
+                };
+                healthStatus.overall = 'degraded';
+            }
+        }
+
+        return healthStatus;
+    }
+
+    /**
      * Unregister a skill
      * @param {string} skillName - Name of skill to unregister
      */
