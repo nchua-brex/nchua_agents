@@ -69,6 +69,10 @@ temp_*.sql
 # Sensitive configuration (if any)
 secrets.yaml
 .env
+.env.*
+credentials.json
+token.json
+hex-config.json
 
 # Test outputs
 .pytest_cache/

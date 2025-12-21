@@ -36,6 +36,16 @@ Integration layers for connecting Node.js skills with Python agents and external
 - Error handling and output parsing
 - Cross-language workflow orchestration
 
+### 🎨 Content (`branding/`)
+Skills for generating and validating brand-compliant content.
+
+**BrandingSkill** - Generate content that adheres to Brex brand voice and style guidelines
+- Applies Brex brand voice principles (Real, Gritty, Relentless, Ambitious, Direct)
+- Enforces Metal Design System content guidelines
+- Validates character limits and accessibility requirements
+- Supports multiple content types (button, form, data_display, feedback)
+- Provides brand compliance analysis and scoring
+
 ### 🔧 Core (`core/`)
 Foundational classes and utilities for skill development.
 
@@ -67,6 +77,27 @@ const result = await skill.getCustomerEditionAnalysis({
     endDate: '2024-12-31',
     outputFormat: 'json'
 });
+```
+
+#### Brand-Compliant Content Generation
+```javascript
+const { BrandingSkill } = require('./branding/branding_skill');
+const brandingSkill = new BrandingSkill();
+
+const result = await brandingSkill.execute({
+    content: 'Learn more about our product',
+    contentType: 'button',
+    context: 'marketing',
+    audience: 'founders',
+    tone: 'professional',
+    outputFormat: 'json'
+});
+
+// Result includes:
+// - Branded content with Brex voice applied
+// - Brand compliance analysis and scoring
+// - Design system validation
+// - Character limit validation
 ```
 
 ### Multi-Skill Workflows
