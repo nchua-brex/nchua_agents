@@ -1,56 +1,75 @@
 # nchua_agents 🤖
 
-A modular multi-agent system for intelligent data analysis and automation. This system provides specialized agents that can work independently or collaboratively to perform complex analysis tasks.
+A hybrid multi-agent system combining Python agents with a modern Node.js skill-based architecture for intelligent business data analysis and automation.
 
 ## 🎯 Overview
 
-The `nchua_agents` system is designed to be a scalable platform for deploying specialized AI agents that can:
+The `nchua_agents` system provides two complementary approaches for business intelligence automation:
 
-- **Work Independently**: Each agent has specific capabilities and can operate standalone
-- **Collaborate Seamlessly**: Agents can communicate and coordinate through the orchestrator
-- **Learn and Improve**: Agents can learn from successful patterns and optimize over time
-- **Scale Horizontally**: Easy to add new specialized agents as needs grow
+### 🐍 **Python Agents** (Legacy/Specialized)
+- **Granola Meeting Notes Agent**: Extracts action items and syncs to Google Docs
+- **Snowflake Data Retrieval Agent**: Direct Snowflake data analysis with MCP integration
+- **Solution Consultants Analysis**: Business intelligence for sales performance
 
-### Current Agents
+### 🚀 **Node.js Skills Architecture** (Modern/Unified)
+- **Unified Interface**: All business operations through standardized skill API
+- **Workflow Orchestration**: Chain multiple skills for complex business processes
+- **Python Integration**: Bridge existing Python agents into Node.js workflows
+- **Extensible Framework**: Easy to add new skills following established patterns
 
-| Agent | Purpose | Capabilities |
-|-------|---------|--------------|
-| 🗄️ **Snowflake Agent** | Data extraction and analysis from Snowflake | Customer revenue analysis, territory performance, cohort analysis, query pattern learning |
+### Current Skills & Agents
 
-### Coming Soon
-- 📊 **Analysis Agent**: Advanced statistical analysis and insights generation
-- 📈 **Visualization Agent**: Automated chart and dashboard creation
-- 📧 **Reporting Agent**: Automated report generation and distribution
-- 🔍 **Research Agent**: Web research and competitive intelligence
+| Component | Type | Purpose | Capabilities |
+|-----------|------|---------|--------------|
+| 🗄️ **SnowflakeRetrievalSkill** | Node.js Skill | Business data queries | Customer revenue, territory performance, templated queries |
+| 🔗 **PythonDataRetrievalSkill** | Bridge Skill | Python agent wrapper | Existing Snowflake agent integration |
+| 📊 **HexDashboardAnalysisSkill** | Node.js Skill | Dashboard analysis | Pattern extraction, KPI analysis, SQL optimization |
+| 📋 **GoogleDriveSpreadsheetSkill** | Node.js Skill | Spreadsheet intelligence | Business knowledge extraction, calculation patterns |
+| 🤖 **Granola Meeting Agent** | Python Agent | Meeting notes processing | Action item extraction, Google Docs sync |
+
+### Architecture Components
+- 🎯 **SkillRegistry**: Central skill discovery and management
+- 🔄 **OrchestrationEngine**: Multi-skill workflow coordination
+- 🌉 **PythonAgentBridge**: Seamless Python-to-Node.js integration
+- ⚙️ **BaseSkill**: Standardized skill foundation class
 
 ## 🏗️ System Architecture
 
+### Node.js Skills Architecture (Primary)
+```
+skills/                              # Modern skill-based system
+├── 🎯 core/                        # Core framework
+│   ├── base_skill.js               # Foundation class for all skills
+│   ├── skill_registry.js           # Central skill management
+│   └── orchestration_engine.js     # Workflow coordination
+├── 🌉 bridges/                     # Integration layer
+│   └── python_bridge.js            # Python agent integration
+├── 📊 data-sources/                # Data access skills
+│   ├── snowflake_retrieval.js      # Native Snowflake operations
+│   ├── google_drive_spreadsheet.js # Spreadsheet analysis
+│   └── python_data_retrieval_skill.js # Python agent wrapper
+├── 🔍 analysis/                    # Analysis skills
+│   └── hex_dashboard_analysis.js   # Dashboard pattern analysis
+├── 📋 workflows/                   # Business workflow definitions
+├── 🧪 test_python_bridge.js       # Integration testing
+└── 📦 package.json                # Node.js dependencies
+```
+
+### Python Agents (Legacy/Specialized)
 ```
 nchua_agents/
-├── 🤖 agent_orchestrator.py          # Main coordination system
-├── 🔧 shared/                        # Shared utilities and base classes
-│   └── utils/
-│       ├── base_agent.py             # Base agent class and interfaces
-│       └── __init__.py
-├── 🏢 agents/                        # Individual agent implementations
-│   ├── snowflake_agent/              # Snowflake data extraction agent
-│   │   ├── snowflake_data_agent.py   # Main agent implementation
-│   │   ├── snowflake_agent_config.yaml # Agent configuration
-│   │   ├── run_analysis.py           # Standalone CLI interface
-│   │   └── __init__.py
-│   └── __init__.py
+├── 🤖 agent.py                    # Granola meeting notes agent
+├── 🏢 agents/                     # Python agents
+│   └── data_retrieval/            # Snowflake MCP agent
+│       ├── main.py                # Data retrieval agent
+│       └── brex_reference_patterns.sql
+├── 📊 Solution Consultants Attainment/ # Business analysis agent
 ├── 📚 Documentation & Reference
-│   ├── README.md                     # This file
-│   ├── SNOWFLAKE_SCHEMA.md          # Snowflake database schema
-│   ├── reference_queries.sql        # Validated SQL patterns
+│   ├── SNOWFLAKE_SCHEMA.md        # Database schema
 │   └── SNOWFLAKE_MCP_TROUBLESHOOTING.md
-├── 📊 Analysis & Data
-│   ├── *.csv                        # Analysis results
-│   ├── *.sql                        # Custom queries
-│   └── data_extracts/               # Generated exports
-└── 📋 Project Files
-    ├── requirements.txt
-    └── .gitignore
+└── 📋 Configuration
+    ├── requirements.txt            # Python dependencies
+    └── setup.py                   # Installation script
 ```
 
 ## 🚀 Quick Start
@@ -62,94 +81,163 @@ nchua_agents/
 git clone https://github.com/nchua-brex/nchua_agents.git
 cd nchua_agents
 
-# Install dependencies
+# Install Python dependencies (for existing agents)
 pip install -r requirements.txt
 
-# Make executables
-chmod +x agent_orchestrator.py
-chmod +x agents/snowflake_agent/run_analysis.py
+# Install Node.js dependencies (for skills system)
+cd skills/
+npm install
 ```
 
-### 2. Basic Usage
+### 2. Skills System Usage (Recommended)
 
-#### Using the Orchestrator (Recommended)
-
+#### Basic Skills Testing
 ```bash
-# Run comprehensive customer analysis
-python agent_orchestrator.py --task customer-analysis --months 6 --export
+# Test the skill system integration
+cd skills/
+node test_python_bridge.js
 
-# Analyze specific SC territories
-python agent_orchestrator.py --task territory-performance --sc-names "John Smith,Jane Doe" --export
+# Test Python agent bridge specifically
+node test_python_bridge.js bridge
 
-# Run complete revenue analysis across all dimensions
-python agent_orchestrator.py --task comprehensive-revenue-analysis --months 12 --export
-
-# List available agents and capabilities
-python agent_orchestrator.py --list-agents
-python agent_orchestrator.py --list-capabilities
+# Test workflow orchestration
+node test_python_bridge.js workflow
 ```
 
-#### Using Individual Agents
+#### Using Skills Programmatically
+```javascript
+// Load and use skills
+const { SkillRegistry } = require('./core/skill_registry');
+const { SnowflakeRetrievalSkill } = require('./data-sources/snowflake_retrieval');
 
+const registry = new SkillRegistry();
+const snowflakeSkill = new SnowflakeRetrievalSkill();
+registry.register(snowflakeSkill, 'data-sources');
+
+// Execute business analysis
+const result = await snowflakeSkill.getCustomerRevenue({
+    territory: 'West Coast',
+    dateRange: '2024-Q4',
+    outputFormat: 'json'
+});
+```
+
+#### Workflow Orchestration
+```javascript
+// Chain multiple skills together
+const { SkillOrchestrationEngine } = require('./core/orchestration_engine');
+
+const orchestrator = new SkillOrchestrationEngine();
+orchestrator.registerWorkflow('quarterly_review', {
+    description: 'Comprehensive quarterly business analysis',
+    steps: [
+        { name: 'fetch_data', skill: 'SnowflakeRetrievalSkill', method: 'getCustomerRevenue' },
+        { name: 'analyze_hex', skill: 'HexDashboardAnalysisSkill', method: 'analyzeDashboard' }
+    ]
+});
+
+await orchestrator.executeWorkflow('quarterly_review', { quarter: '2024-Q4' });
+```
+
+### 3. Python Agents Usage (Legacy)
+
+#### Individual Python Agents
 ```bash
-# Snowflake Agent - Customer revenue analysis
-python agents/snowflake_agent/run_analysis.py customer-revenue --months 6 --export
+# Granola Meeting Notes Agent
+python agent.py --notes-dir ~/Documents/Granola/
 
-# Snowflake Agent - Territory analysis
-python agents/snowflake_agent/run_analysis.py sc-territories "John Smith" --export
+# Data Retrieval Agent
+python agents/data_retrieval/main.py test
+python agents/data_retrieval/main.py territory
 
-# Snowflake Agent - Learn new query pattern
-python agents/snowflake_agent/run_analysis.py learn-query \
-  --name "pipeline_analysis" \
-  --description "Analyze sales pipeline performance" \
-  --file pipeline_query.sql \
-  --category "sales_analysis"
+# Solution Consultants Analysis
+cd "Solution Consultants Attainment/"
+python run_segment_analysis.py
 ```
 
-## 🤖 Agent System Features
+## 🤖 Skills System Features
 
-### Multi-Agent Orchestration
+### Skill-Based Architecture
 
-The orchestrator coordinates multiple agents to complete complex tasks:
+The modern Node.js system provides unified business intelligence through skills:
 
-```python
-# Example: Customer Analysis involves multiple coordinated steps
-1. Extract customer revenue data (Snowflake Agent)
-2. Perform segmentation analysis (Snowflake Agent)
-3. Run cohort analysis (Snowflake Agent)
-4. Generate insights (Future: Analysis Agent)
-5. Create visualizations (Future: Visualization Agent)
-6. Compile report (Future: Reporting Agent)
+```javascript
+// Example: Quarterly Business Review workflow
+1. Extract customer revenue data (SnowflakeRetrievalSkill)
+2. Analyze Hex dashboard patterns (HexDashboardAnalysisSkill)
+3. Extract spreadsheet business knowledge (GoogleDriveSpreadsheetSkill)
+4. Generate comprehensive insights (Future: AnalysisSkill)
+5. Create automated reports (Future: ReportingSkill)
 ```
 
-### Intelligent Task Routing
+### Unified Skill Interface
 
-```python
-# The orchestrator automatically routes tasks to appropriate agents
-task = AgentTask(
-    action="extract_customer_revenue_by_edition",
-    agent_type="snowflake_agent",
-    parameters={"months_back": 6}
-)
+All skills follow the same standardized interface:
 
-# Orchestrator finds and executes on the right agent
-result = orchestrator.execute_task("snowflake_agent", task)
+```javascript
+// Every skill inherits from BaseSkill
+class MyBusinessSkill extends BaseSkill {
+    constructor() {
+        super('MyBusinessSkill', {
+            description: 'Custom business analysis',
+            capabilities: ['analysis', 'reporting'],
+            inputFormats: ['json'],
+            outputFormats: ['json', 'csv']
+        });
+    }
+
+    async execute(inputs) {
+        // Standardized skill execution
+        return { success: true, data: results };
+    }
+}
 ```
 
-### Pattern Learning and Optimization
+### Python Agent Integration
 
-Agents learn from successful operations:
+Seamlessly integrate existing Python agents:
 
-```python
-# Agents automatically track query performance
-agent.learn_new_query(
-    name="custom_territory_analysis",
-    sql=your_successful_query,
-    category="territory_analysis"
-)
+```javascript
+// Bridge Python agents into Node.js workflows
+const pythonSkill = new PythonDataRetrievalSkill();
+const result = await pythonSkill.analyzeTerritory({
+    territory: 'West Coast',
+    metrics: ['revenue', 'customer_count']
+});
+```
 
-# Future executions can reuse learned patterns
-patterns = agent.get_available_patterns()
+### Business Workflow Orchestration
+
+Chain multiple skills for complex business processes:
+
+```javascript
+// Register a comprehensive business workflow
+orchestrator.registerWorkflow('customer_analysis_pipeline', {
+    description: 'Complete customer analysis with insights',
+    steps: [
+        {
+            name: 'fetch_customer_data',
+            skill: 'SnowflakeRetrievalSkill',
+            method: 'getCustomerRevenue'
+        },
+        {
+            name: 'analyze_spreadsheet_patterns',
+            skill: 'GoogleDriveSpreadsheetSkill',
+            method: 'analyzeSpreadsheet'
+        },
+        {
+            name: 'extract_hex_insights',
+            skill: 'HexDashboardAnalysisSkill',
+            method: 'analyzeDashboard'
+        }
+    ]
+});
+
+// Execute the complete workflow
+const insights = await orchestrator.executeWorkflow('customer_analysis_pipeline', {
+    territory: 'Enterprise',
+    quarter: '2024-Q4'
+});
 ```
 
 ## 📊 Available Analysis Types
@@ -199,47 +287,88 @@ def register_all_agents():
     return registry
 ```
 
-## 🔄 Adding New Agents
+## 🔄 Adding New Skills
 
-### 1. Create Agent Structure
+### 1. Create Skill Structure
 
 ```bash
-mkdir -p agents/my_new_agent
-touch agents/my_new_agent/__init__.py
-touch agents/my_new_agent/my_agent.py
-touch agents/my_new_agent/config.yaml
+# Create new skill file
+touch skills/data-sources/my_new_skill.js
+
+# Or create new category
+mkdir skills/my-category/
+touch skills/my-category/my_skill.js
 ```
 
-### 2. Implement Agent Class
+### 2. Implement Skill Class
 
-```python
-# agents/my_new_agent/my_agent.py
-from shared.utils.base_agent import BaseAgent, AgentTask, AgentResult
+```javascript
+// skills/data-sources/my_new_skill.js
+const { BaseSkill } = require('../core/base_skill');
 
-class MyNewAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("my_new_agent", "path/to/config.yaml")
+class MyNewSkill extends BaseSkill {
+    constructor() {
+        super('MyNewSkill', {
+            description: 'Custom business intelligence skill',
+            capabilities: ['data_analysis', 'reporting'],
+            inputFormats: ['json'],
+            outputFormats: ['json', 'csv'],
+            requiresAuth: true
+        });
+    }
 
-    def get_capabilities(self) -> List[str]:
-        return ["capability1", "capability2"]
+    async execute(inputs = {}) {
+        // Implement business logic
+        return {
+            success: true,
+            data: processedResults,
+            metadata: {
+                executedAt: new Date(),
+                inputs: inputs
+            }
+        };
+    }
 
-    def execute_task(self, task: AgentTask) -> AgentResult:
-        # Implement task execution logic
-        pass
+    async customMethod(inputs = {}) {
+        // Add custom business methods
+        return await this.execute(inputs);
+    }
+}
+
+module.exports = { MyNewSkill };
 ```
 
-### 3. Register with Orchestrator
+### 3. Register and Test Skill
 
-```python
-# agent_orchestrator.py
-def setup_agents(self):
-    # Register existing agents
-    snowflake_agent = SnowflakeDataAgent()
-    agent_registry.register_agent(snowflake_agent)
+```javascript
+// Register skill with registry
+const { SkillRegistry } = require('./core/skill_registry');
+const { MyNewSkill } = require('./data-sources/my_new_skill');
 
-    # Register your new agent
-    my_agent = MyNewAgent()
-    agent_registry.register_agent(my_agent)
+const registry = new SkillRegistry();
+const mySkill = new MyNewSkill();
+registry.register(mySkill, 'data-sources');
+
+// Test the skill
+const result = await mySkill.execute({ param1: 'value1' });
+console.log(result);
+```
+
+### 4. Add to Workflows
+
+```javascript
+// Include in business workflows
+orchestrator.registerWorkflow('my_business_process', {
+    description: 'Custom business process using new skill',
+    steps: [
+        {
+            name: 'execute_custom_logic',
+            skill: 'MyNewSkill',
+            method: 'customMethod',
+            inputs: { source: 'workflow_data' }
+        }
+    ]
+});
 ```
 
 ## 📈 Advanced Usage
@@ -324,36 +453,45 @@ python agent_orchestrator.py --list-agents --verbose
 
 ## 🛣️ Roadmap
 
-### Phase 2: Advanced Analytics Agents
-- **Analysis Agent**: Statistical analysis, regression, forecasting
-- **Visualization Agent**: Automated chart generation, dashboard creation
-- **Reporting Agent**: PDF reports, email automation
+### Phase 2: Advanced Business Skills
+- **DACITemplateSkill**: Automated DACI document generation and analysis
+- **CompetitiveAnalysisSkill**: Market research and competitive intelligence
+- **FinancialReportingSkill**: Automated financial analysis and reporting
+- **SalesPerformanceSkill**: Advanced sales analytics and forecasting
 
-### Phase 3: Intelligence Agents
-- **Research Agent**: Web scraping, competitive analysis
-- **Recommendation Agent**: ML-powered insights and recommendations
-- **Monitoring Agent**: Automated alerting and anomaly detection
+### Phase 3: Intelligence & Automation
+- **MLInsightsSkill**: Machine learning-powered business insights
+- **PredictiveAnalysisSkill**: Forecasting and trend analysis
+- **AlertingSkill**: Automated monitoring and notification system
+- **ComplianceSkill**: Automated compliance checking and reporting
 
 ### Phase 4: Integration & Deployment
-- **API Gateway**: RESTful API for agent access
-- **Scheduling System**: Cron-like job scheduling for agents
-- **Web Interface**: GUI for agent management and task execution
+- **Web API Gateway**: RESTful API for skill system access
+- **Workflow Scheduler**: Cron-like scheduling for business workflows
+- **Dashboard Interface**: Web UI for skill management and execution
+- **Enterprise Integration**: SSO, audit logs, and enterprise features
 
 ## 🤝 Contributing
 
-### Adding New Agents
-1. Follow the agent template structure
-2. Inherit from `BaseAgent` class
-3. Implement required methods (`get_capabilities`, `execute_task`)
-4. Add comprehensive tests
-5. Update documentation
+### Adding New Skills (Recommended)
+1. Follow the skill template structure (`skills/data-sources/` or similar)
+2. Inherit from `BaseSkill` class
+3. Implement required methods (`execute` and custom business methods)
+4. Add comprehensive testing in test files
+5. Register with SkillRegistry and update documentation
+
+### Adding Python Agents (Legacy)
+1. Follow existing Python agent patterns
+2. Use MCP integration where applicable
+3. Add bridge wrapper in `skills/bridges/` for Node.js integration
+4. Include setup automation (setup.py or Makefile)
 
 ### Best Practices
-- Use type hints and docstrings
-- Follow the existing logging patterns
-- Implement proper error handling
-- Add configuration through YAML files
-- Include usage examples
+- **Skills**: Use JavaScript/Node.js for new business intelligence capabilities
+- **Python**: Keep existing agents for specialized/legacy functionality
+- **Integration**: Bridge Python agents through the Node.js skill system
+- **Testing**: Include both unit tests and integration tests
+- **Documentation**: Update README and include usage examples
 
 ## 📝 License
 
@@ -361,4 +499,4 @@ This project is internal to Brex and follows company data governance policies.
 
 ---
 
-**🚀 Ready to build intelligent automation? Start by exploring the Snowflake agent and then add your own specialized agents to the system!**
+**🚀 Ready to build intelligent business automation? Start with the Node.js skills system for unified workflows, or extend existing Python agents for specialized functionality!**
