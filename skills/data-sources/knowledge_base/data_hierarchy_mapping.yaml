@@ -1,0 +1,265 @@
+# Brex Data Hierarchy and Source Priority Mapping
+# Based on Account & Contact Key Fields hierarchy files
+# This defines the "Source of Truth" rollup system and data source priorities
+
+# Core Architecture Pattern
+hierarchy_architecture:
+  rollup_system:
+    description: "Sophisticated SoT system with locked rollup fields and manual overrides"
+    patterns:
+      sot_field: "Brex_[Field]__c - Formula field, locked, not editable"
+      override_field: "SFDC_Override_[Field]__c - Manual override, admin/manager editable"
+      source_fields: "Multiple data sources with priority ordering (0=highest)"
+
+  data_governance:
+    principle: "Manual overrides trump all automated sources"
+    escalation: "File #frontline ticket or report to manager for corrections"
+
+# Employee Count Hierarchy (CONFIRMED CORRECT FIELD)
+employee_count_hierarchy:
+  sot_field: "Brex_EE_Count_number__c"  # This matches your correction!
+  api_name: "Brex_EE_Count_number__c"
+  status: "LOCKED - Formula field, source of truth"
+
+  source_priority:
+    0:
+      field: "Brex_EE_Count_number__c"
+      source: "Rollup"
+      status: "SoT - Not editable"
+
+    retool:
+      field: "Retool_Override_EE_Count__c"
+      source: "Retool"
+      editability: "Admin only"
+
+    1:
+      field: "SFDC_Override_Employee_Count__c"
+      source: "Manual"
+      editability: "Admin/Manager only"
+      escalation: "File #frontline ticket"
+
+    2:
+      field: "OBS_EE_Count__c"
+      source: "OBS EE Count"
+
+    3:
+      field: "ZoomInfo_EE_Count__c"
+      source: "ZoomInfo"
+      notes: "Does not include part-time or contract employees"
+      editability: "Admin only"
+
+    4:
+      field: "Harmonic_EE_Count__c"
+      source: "Harmonic"
+      editability: "Admin only"
+
+    5:
+      field: "LinkedIn_EE_Count__c"
+      source: "LinkedIn"
+      editability: "Admin only"
+
+    6:
+      field: "Clay_EE_Count__c"
+      source: "Clay"
+      notes: "Multi-source aggregator - contact summer_lindman@brex.com"
+      editability: "Admin only"
+
+    7:
+      field: "Signup_Employee_Count_Range__c"
+      source: "Product"
+      notes: "Range-based - use upper number (21_to_50 → 50)"
+      editability: "Not editable"
+
+    8:
+      field: "NumberOfEmployees"
+      source: "Standard Employee Field"
+      status: "DEPRECATED - Legacy field, NO LONGER IN USE"
+
+# Company Size Logic
+company_size_logic:
+  segmentation_rule: |
+    IF ZoomInfo_EE_Count > 50:
+      ZoomInfo is secondary source for address fields
+    IF ZoomInfo_EE_Count <= 50 OR NULL:
+      BrAD product data is secondary source for address fields
+
+# Website Hierarchy
+website_hierarchy:
+  sot_field: "Brex_Website_url__c"
+  source_priority:
+    0: {field: "Brex_Website_url__c", source: "Rollup", status: "SoT"}
+    1: {field: "SFDC_Override_Website__c", source: "Manual", editability: "Admin/Manager"}
+    2: {field: "KYC_URL__c", source: "KYC", notes: "Verified after manual review"}
+    3: {field: "Signup_Company_URL__c", source: "Product"}
+    4: {field: "LLM_website__c", source: "LLM Scraper", notes: "AI-determined true website"}
+    5: {field: "ZoomInfo_Website__c", source: "ZoomInfo"}
+    6: {field: "Harmonic_Website__c", source: "Harmonic"}
+    7: {field: "LinkedIn_Website__c", source: "LinkedIn"}
+    8: {field: "Clay_Website__c", source: "Clay"}
+    9: {field: "Website", source: "Standard Website", notes: "Used for new account creation"}
+
+# Industry Hierarchy
+industry_hierarchy:
+  sot_field: "Brex_Industry__c"
+  source_priority:
+    0: {field: "Brex_Industry__c", source: "Rollup", status: "SoT"}
+    1: {field: "SFDC_Override_Industry__c", source: "Manual", editability: "Admin/Manager"}
+    2: {field: "ZoomInfo_Industry__c", source: "ZoomInfo"}
+    3: {field: "Harmonic_Industry__c", source: "Harmonic"}
+    4: {field: "LinkedIn_Industry__c", source: "LinkedIn"}
+    5: {field: "Signup_Company_Industry__c", source: "Product", type: "Formula"}
+    6: {field: "Clay_Industry__c", source: "Clay"}
+
+# Address Hierarchy (Street, City, State, Country, Zip)
+address_hierarchy:
+  pattern: "Same priority structure for all address components"
+  sot_fields:
+    street: "Brex_Street_text__c"
+    city: "Brex_City_text__c"
+    state: "Brex_State_text__c"
+    country: "Brex_Country_text__c"
+    zip: "Brex_Zip_text__c"
+
+  source_priority:
+    0: {source: "Rollup", status: "SoT"}
+    1: {source: "Manual", editability: "Admin/Manager"}
+    "2_or_3": {source: "Product", notes: "BrAD data - priority depends on company size"}
+    "3_or_2": {source: "ZoomInfo", notes: "Priority depends on company size logic"}
+    4: {source: "Harmonic"}
+    5: {source: "LinkedIn"}
+    6: {source: "Clay"}
+    7: {source: "Standard Address", status: "Remove from layout"}
+
+# Revenue Hierarchy
+revenue_hierarchy:
+  sot_field: "Brex_Revenue_currency__c"
+  source_priority:
+    0: {field: "Brex_Revenue_currency__c", source: "Rollup", status: "SoT"}
+    1: {field: "SFDC_Override_Revenue__c", source: "Manual", type: "Currency(16,2)"}
+    2: {field: "ZoomInfo_raw_revenue_data__c", source: "ZoomInfo", notes: "Millions USD"}
+    3: {field: "Clay_Revenue__c", source: "Clay", type: "Currency(16,2)"}
+    4: {field: "LinkedIn_Revenue__c", source: "LinkedIn"}
+
+# Special Business Logic Fields
+special_fields:
+  ecommerce_detection:
+    sot_field: "Brex_Is_Ecommerce__c"
+    sources:
+      - "SFDC_Override_Is_Ecommerce__c"
+      - "LLM_Is_Ecommerce__c" # AI web scraper
+      - "Clay_Is_Ecommerce__c"
+      - "Is_Ecommerce_2__c" # Legacy calculation
+
+  pe_backing:
+    sot_field: "Brex_Is_PE_Backed__c"
+    sources:
+      - "SFDC_Override_Is_PE_Backed__c" # Editable by all
+      - "Snowflake_Is_PE_Backed__c" # Calculated in Snowflake
+      - "Harmonic_Is_PE_Backed__c" # From funding type
+    investors_field: "Brex_PE_Investors__c"
+    logic: "Concatenate SFDC_Override_PE_Investors__c + Snowflake_PE_Investors"
+
+  linkedin_profile:
+    sot_field: "Brex_LinkedIn_Profile_URL__c"
+    sources:
+      - "SFDC_Override_LinkedIn_Profile_URL__c" # Editable by all
+      - "Company_LinkedIn_URL__c" # ZoomInfo
+      - "Clay_LinkedIn_URL__c" # Clay
+
+# Contact Hierarchy Fields
+contact_hierarchy:
+  email:
+    sot_field: "Email"
+    sources: ["SFDC_Override_Email__c", "Signup_Email__c", "ZoomInfo_Email__c",
+              "Alternate_Email__c", "Harmonic_Email_Address__c", "Clay_Email_Address__c", "LinkedIn_Email_Address__c"]
+
+  title:
+    sot_field: "Brex_Contact_Title__c"
+    sources: ["SFDC_Override_Title__c", "ZoomInfo_Title__c", "LinkedIn_Title__c",
+              "Harmonic_Title__c", "Clay_Title__c", "Title"]
+
+  phone:
+    sot_field: "Brex_Contact_Phone__c"
+    sources: ["SFDC_Override_Phone__c", "ZoomInfo_Phone__c", "LinkedIn_Phone__c",
+              "Harmonic_Phone_Number__c", "Clay_Phone__c", "Phone"]
+
+  mobile:
+    sot_field: "Brex_Contact_Mobile__c"
+    sources: ["SFDC_Override_Mobile__c", "Clay_Mobile__c", "ZoomInfo_Mobile_Number__c", "MobilePhone"]
+
+# ZoomInfo (Cube) Field Mappings
+zoominfo_mappings:
+  intent_signals:
+    - {cube: "Expense management latest intent date", sf: "ZoomInfo Intent: Expense Management"}
+    - {cube: "Travel management latest intent date", sf: "ZoomInfo Intent: Travel Mgmt Software"}
+    - {cube: "Business credit cards latest intent date", sf: "ZoomInfo Intent: Business Credit Cards"}
+    - {cube: "Spend management latest intent date", sf: "ZoomInfo Intent: Spend Management"}
+    - {cube: "Ap automation latest intent date", sf: "ZoomInfo Intent: AP Automation"}
+
+  company_data:
+    - {cube: "Employee count", sf: "ZoomInfo EE Count"}
+    - {cube: "Annual revenue thousands usd", sf: "ZoomInfo Annual Revenue in Thousands USD"}
+    - {cube: "Company name", sf: "ZoomInfo Company Name"}
+    - {cube: "Primary industry", sf: "ZoomInfo Industry"}
+    - {cube: "Website", sf: "ZoomInfo Website"}
+
+  growth_metrics:
+    - {cube: "Employee growth rate pct l 12 m", sf: "ZoomInfo Past 1 Year EE Growth Rate"}
+    - {cube: "Employee growth rate pct l 24 m", sf: "ZoomInfo Past 2 Year EE Growth Rat"}
+
+  location_data:
+    - {cube: "Company street address", sf: "ZoomInfo HQ Street"}
+    - {cube: "Company city", sf: "ZoomInfo HQ City"}
+    - {cube: "Company state", sf: "ZoomInfo HQ State"}
+    - {cube: "Company country", sf: "ZoomInfo HQ Country"}
+    - {cube: "Company zip code", sf: "ZoomInfo HQ Zip/Postal Code"}
+
+# Data Source Characteristics
+data_sources:
+  manual_overrides:
+    authority: "Highest - trumps all automated sources"
+    editability: "Admin/Manager only (except PE fields)"
+    escalation_process: "File #frontline ticket or contact manager"
+
+  zoominfo:
+    strengths: "Comprehensive B2B data, intent signals, growth metrics"
+    coverage: "High for established companies"
+    limitations: "May not include part-time/contract employees"
+
+  harmonic:
+    strengths: "High quality B2B data, funding information"
+    pe_logic: "Private_Equity or LBO_Buyout funding types"
+
+  linkedin:
+    strengths: "Professional network data, verified profiles"
+    coverage: "Good for contact information and job titles"
+
+  clay:
+    strengths: "Multi-source aggregator, flexible data providers"
+    contact: "summer_lindman@brex.com for source investigation"
+
+  product_brad:
+    strengths: "Internal signup and customer data"
+    priority_logic: "Higher priority for smaller companies (<50 EE)"
+
+  llm_scraper:
+    strengths: "AI-determined website and ecommerce detection"
+    use_case: "Website validation, ecommerce classification"
+
+  snowflake_calculated:
+    strengths: "Complex calculations, PE analysis"
+    pe_logic: "Combines Harmonic, Crunchbase, ZoomInfo investor data"
+
+# Query Implications
+query_guidance:
+  use_sot_fields:
+    reason: "Always use Brex_[Field]__c for analysis - these are source of truth"
+    examples: ["Brex_EE_Count_number__c", "Brex_Industry__c", "Brex_Website_url__c"]
+
+  data_quality_analysis:
+    compare_sources: "Compare SoT field vs individual source fields for data quality"
+    check_overrides: "Monitor SFDC_Override fields for manual corrections"
+
+  avoid_legacy_fields:
+    deprecated: ["NumberOfEmployees", "BillingAddress", "Standard address fields"]
+    reason: "Replaced by hierarchy system"

@@ -70,6 +70,44 @@ primary_tables:
     common_filters:
       - "is_primary_salesforce_account_for_cuacc = TRUE"
 
+  fivetran_salesforce_account:
+    full_name: "fivetran.salesforce.account"
+    purpose: "Raw Salesforce account data with standard fields"
+    primary_key: "id"
+    key_fields:
+      - id: "Salesforce account ID (links to coredata.salesforce.accounts.salesforce_account_id)"
+      - name: "Account name"
+      - number_of_employees: "Standard Salesforce employee count field"
+      - brex_ee_count_number_c: "Custom Brex employee count field (CORRECT FIELD)"
+      - brex_ee_count_c: "Custom Brex employee count field (deprecated/unpopulated)"
+      - is_deleted: "Account deletion flag"
+    data_quality_notes:
+      employee_count_fields:
+        brex_ee_count_number_c:
+          coverage: "Good coverage - populated custom field"
+          status: "RECOMMENDED - Use this field for Brex employee count from Salesforce"
+          description: "Custom Brex field with actual employee count data"
+        number_of_employees:
+          coverage: "~91% (3.2M of 3.5M accounts)"
+          status: "Alternative - Standard Salesforce field"
+          description: "Standard Salesforce field with good data coverage"
+        brex_ee_count_c:
+          coverage: "0% (100% null across all accounts)"
+          status: "DO NOT USE - Completely unpopulated"
+          description: "Wrong custom field that was never populated"
+    common_filters:
+      - "is_deleted = FALSE"
+    join_to_customer_data:
+      description: "Requires 2-step join through coredata.salesforce.accounts"
+      pattern: |
+        FROM coredata.customer.customer_wide cw
+        LEFT JOIN coredata.salesforce.accounts acc
+            ON cw.customer_account_id = acc.customer_account_id
+            AND acc.is_primary_salesforce_account_for_cuacc = TRUE
+        LEFT JOIN fivetran.salesforce.account sf
+            ON acc.salesforce_account_id = sf.id
+            AND sf.is_deleted = FALSE
+
 # Solutions Consultant specific tables
 sc_tables:
   ae_cse_account_holding_periods:
@@ -143,3 +181,25 @@ join_patterns:
       - table: "workday.workday.employees"
         on: "LOWER(monthly.rep_receiving_comm_rev_credit) = LOWER(we.email)"
         type: "LEFT JOIN"
+
+  customer_employee_count_comparison:
+    base_table: "coredata.customer.customer_wide"
+    joins:
+      - table: "coredata.salesforce.accounts"
+        on: "customer_account_id"
+        type: "LEFT JOIN"
+        additional_conditions:
+          - "acc.is_primary_salesforce_account_for_cuacc = TRUE"
+      - table: "fivetran.salesforce.account"
+        on: "acc.salesforce_account_id = sf.id"
+        type: "LEFT JOIN"
+        additional_conditions:
+          - "sf.is_deleted = FALSE"
+    purpose: "Compare Brex internal employee count with Salesforce employee count data"
+    recommended_fields:
+      - "cw.employee_count as cw_employee_count"
+      - "sf.brex_ee_count_number_c as salesforce_ee_count"
+      - "cw.customer_account_id"
+      - "cw.dba_name"
+    data_quality_checks:
+      - "CASE WHEN sf.brex_ee_count_number_c IS NULL THEN 'Missing' WHEN ABS(sf.brex_ee_count_number_c - cw.employee_count) > 50 THEN 'Large Gap' ELSE 'Aligned' END as ee_count_quality"

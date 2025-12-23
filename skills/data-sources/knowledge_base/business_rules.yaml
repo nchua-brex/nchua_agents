@@ -129,3 +129,67 @@ data_quality:
     cohort_analysis: "cohort_start_date IS NOT NULL"
     obs_analysis: "one_brex_segment IS NOT NULL"
     purpose: "Exclude records with missing key dimensions"
+
+# Employee Count Data Rules
+employee_count_data:
+  recommended_field:
+    source: "coredata.customer.customer_wide.employee_count"
+    purpose: "Brex internal employee count - high reliability"
+    coverage: "High for active customers"
+
+  salesforce_field:
+    source: "fivetran.salesforce.account.brex_ee_count_number_c"
+    purpose: "Brex custom employee count field in Salesforce (CORRECT FIELD)"
+    coverage: "Good coverage with populated data"
+    status: "RECOMMENDED - Use for Salesforce employee count comparison"
+
+  alternative_salesforce_field:
+    source: "fivetran.salesforce.account.number_of_employees"
+    purpose: "Standard Salesforce employee count field"
+    coverage: "~91% (3.2M of 3.5M accounts)"
+    status: "Alternative option"
+
+  deprecated_field:
+    source: "fivetran.salesforce.account.brex_ee_count_c"
+    status: "DO NOT USE - 100% null across all accounts"
+    purpose: "Wrong custom field that was never populated"
+
+  join_requirements:
+    fivetran_access: "Requires 2-step join through coredata.salesforce.accounts"
+    essential_filters:
+      - "coredata.salesforce.accounts.is_primary_salesforce_account_for_cuacc = TRUE"
+      - "fivetran.salesforce.account.is_deleted = FALSE"
+
+  data_quality_analysis:
+    comparison_logic: "Compare customer_wide.employee_count vs fivetran.salesforce.account.brex_ee_count_number_c"
+    quality_flags:
+      - "NULL: sf.brex_ee_count_number_c IS NULL"
+      - "Large Gap: ABS(sf.brex_ee_count_number_c - cw.employee_count) > 50"
+      - "Moderate Gap: ABS(sf.brex_ee_count_number_c - cw.employee_count) > 10"
+      - "Aligned: Otherwise"
+
+# Data Hierarchy Rules (from Account & Contact Key Fields)
+data_hierarchy:
+  rollup_system:
+    principle: "SoT fields (Brex_[Field]__c) are locked formula fields"
+    override_system: "SFDC_Override fields provide manual corrections"
+    authority: "Manual overrides trump all automated sources"
+
+  source_priorities:
+    manual_highest: "SFDC_Override fields = Order 1 (after SoT)"
+    external_sources:
+      zoominfo: "Order 2-3 (varies by field)"
+      harmonic: "Order 3-4"
+      linkedin: "Order 4-5"
+      clay: "Order 5-6"
+      product: "Order 7"
+      legacy: "Order 8+ (deprecated)"
+
+  company_size_logic:
+    rule: "IF ZoomInfo_EE_Count > 50, ZoomInfo priority for address"
+    fallback: "IF ZoomInfo_EE_Count <= 50 OR NULL, use BrAD product data"
+
+  query_implications:
+    use_sot_fields: "Always query Brex_[Field]__c for source of truth"
+    avoid_legacy: "Don't use NumberOfEmployees, BillingAddress, etc."
+    data_quality_checks: "Compare SoT vs source fields for quality analysis"

@@ -1,0 +1,42 @@
+Cube,Salesforce
+Domain rank,ZoomInfo Domain Rank
+Linkedin company profile url,Company LinkedIn URL
+Zoominfo company id,ZoomInfo Company ID
+Expense management latest intent date,ZoomInfo Intent: Expense Management
+Travel management latest intent date,ZoomInfo Intent: Travel Mgmt Software
+Business travel expenses latest intent date,ZoomInfo Intent: Business Travel Expense
+Business credit cards latest intent date,ZoomInfo Intent: Business Credit Cards
+Spend management latest intent date,ZoomInfo Intent: Spend Management
+Ap automation latest intent date,ZoomInfo Intent: AP Automation
+Naics codes concatenated,NAICS Code
+Is defunct company,Out of Business
+Immediate parent zoominfo company id,Parent ZoomInfo Company ID
+Company hq phone,Account Phone
+Ap automation latest intent signal score,ZI Intent: AP Automation signalScore
+Business credit cards latest intent signal score,ZI Intent: Bus. Credit Cards signalScore
+Business travel expenses latest intent signal score,ZI Intent:Bus.Travel Expense signalScore
+Expense management latest intent signal score,ZI Intent:Expense Management signalScore
+Spend management latest intent signal score,ZI Intent: Spend Management signalScore
+Travel management latest intent signal score,ZI Intent: Travel Mgmt SW signalScore
+Annual revenue thousands usd,ZoomInfo Annual Revenue in Thousands USD
+Company name,ZoomInfo Company Name
+Zoominfo company profile url,ZoomInfo Company Profile URL
+Ownership type,ZoomInfo Company Type
+Employee count,ZoomInfo EE Count
+Founded year,ZoomInfo: Founded Year
+Company city,ZoomInfo HQ City
+Company country,ZoomInfo HQ Country
+Company state,ZoomInfo HQ State
+Company street address,ZoomInfo HQ Street
+Company zip code,ZoomInfo HQ Zip/Postal Code
+Primary industry,ZoomInfo Industry
+Investors concatenated,ZoomInfo Investors List
+Employee growth rate pct l 12 m,ZoomInfo Past 1 Year EE Growth Rate
+Employee growth rate pct l 24 m,ZoomInfo Past 2 Year EE Growth Rat
+Primary sub industry,ZoomInfo Sub-Industry
+Filtered tech name concatenated,ZoomInfo Tech Stack
+Website,ZoomInfo Website
+{{ now() }},ZoomInfo Domain Rank Updated
+Enriched,ZoomInfo Enrich Status
+{{ now() }},ZoomInfo Last Updated
+{{ now() }},ZoomInfo revenue: last updated
